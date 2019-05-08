@@ -877,7 +877,7 @@ class Application(tk.Frame):
         
         #Big Blocks Offset
         self.bigBlocksFilterBlockCountVar.set(random.randint(1, 8))
-        self.bigBlocksFilterBlockMaxHeight.set(random.randint(int((self.sourceImage.height/100)*1), int(self.sourceImage.height/self.bigBlocksFilterBlockCountVar.get())))
+        self.bigBlocksFilterBlockMaxHeight.set(int(self.sourceImage.height/self.bigBlocksFilterBlockCountVar.get()))
         self.bigBlocksFilterSeedVar.set(random.randint(0,99999))
 
         #Burn Noise Filter
@@ -962,7 +962,7 @@ class Application(tk.Frame):
             while(x < self.bigBlocksFilterBlockCountVar.get()):
                 #Define height and top edge (and bottom edge) of chunk
                 randomHeight = random.randint(int((self.bigBlocksFilterBlockMaxHeight.get()/100)*10), int(self.bigBlocksFilterBlockMaxHeight.get()))
-                randYtop = random.randint((x) * self.bigBlocksFilterBlockMaxHeight.get(), (x) * self.bigBlocksFilterBlockMaxHeight.get() + randomHeight)
+                randYtop = random.randint(x * self.bigBlocksFilterBlockMaxHeight.get(), x * self.bigBlocksFilterBlockMaxHeight.get() + randomHeight)
                 randYbottom = randYtop + randomHeight
 
                 #Cut chunk with predefined values
