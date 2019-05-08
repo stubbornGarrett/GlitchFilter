@@ -50,8 +50,8 @@ class Application(tk.Frame):
             pass
 
         #Main Variables
-        self.filterQueue        = [self.rgbOffsetFilter, self.bigBlocksFilter, self.burnNoiseFilter, self.rgbScreenFilter, self.screenLinesFilter]
-        self.filterList         = ['RGB Offset', 'Big Blocks', 'Burning Noise', 'RGB Screen', 'Screen Lines']
+        self.filterQueue        = [self.rgbOffsetFilter, self.bigBlocksFilter, self.smallBlocksFilter, self.burnNoiseFilter, self.rgbScreenFilter, self.screenLinesFilter, self.testFilter]
+        self.filterList         = ['RGB Offset', 'Big Blocks', 'Small Blocks', 'Burning Noise', 'RGB Screen', 'Screen Lines']
         self.filterListVar      = tk.StringVar()
         self.filterListVar.set(self.filterList)
 
@@ -117,6 +117,24 @@ class Application(tk.Frame):
 
         self.bigBlocksFilterActiveState = tk.IntVar()
         self.bigBlocksFilterActiveState.set(1)
+
+        #Small Blocks Filter
+        self.smallBlocksFilterBlocksCount = tk.IntVar()
+        self.smallBlocksFilterBlocksCount.set(300)
+        self.smallBlocksFilterMinWidth = tk.IntVar()
+        self.smallBlocksFilterMinWidth.set(100)
+        self.smallBlocksFilterMaxWidth = tk.IntVar()
+        self.smallBlocksFilterMaxWidth.set(150)
+        self.smallBlocksFilterMinHeight = tk.IntVar()
+        self.smallBlocksFilterMinHeight.set(1)
+        self.smallBlocksFilterMaxHeight = tk.IntVar()
+        self.smallBlocksFilterMaxHeight.set(10)
+        
+        self.smallBlocksFilterSeed = tk.IntVar()
+        self.smallBlocksFilterSeed.set(random.randint(0,99999))
+
+        self.smallBlocksFilterActiveState = tk.IntVar()
+        self.smallBlocksFilterActiveState.set(1)
 
         #Screen Lines parameters
         self.screenLinesFilterLineDensity = tk.IntVar()
@@ -302,6 +320,24 @@ class Application(tk.Frame):
         self.bigBlocksFilterRandomSeedButton        = tk.Button(        self.bigBlocksFilterFrame, text=unicodeSymbols[0], font=('Arial', '13', 'bold'), height=1, width=3, command=lambda:self.bigBlocksFilterSeedVar.set(random.randint(0,99999)))
         self.rgbOffsetFilterRedXtooltip             = CreateToolTip(    self.bigBlocksFilterRandomSeedButton, 'Generate random Seed between 0 and 99999')
 
+        #Small Blocks Filter
+        self.smallBlocksFilterFrame                 = tk.Frame(         self.configFilterFrame, width=(confWidth-23), height=400, highlightthickness=0)
+
+        self.smallBlocksFilterBlockCountLabel       = tk.Label(         self.smallBlocksFilterFrame, text='Block Count', anchor=tk.W, relief=tk.GROOVE)
+        self.smallBlocksFilterBlockCountSpinbox     = tk.Spinbox(       self.smallBlocksFilterFrame, from_=0, to_=10000, textvariable=self.smallBlocksFilterBlocksCount, justify=tk.RIGHT, selectbackground=fouColor, command=self.update_parameters)
+        self.smallBlocksFilterMinWidthLabel         = tk.Label(         self.smallBlocksFilterFrame, text='Min Width', anchor=tk.W, relief=tk.GROOVE)
+        self.smallBlocksFilterMinWidthSpinbox       = tk.Spinbox(       self.smallBlocksFilterFrame, from_=1, to_=200, textvariable=self.smallBlocksFilterMinWidth, justify=tk.RIGHT, selectbackground=fouColor, command=self.update_parameters)
+        self.smallBlocksFilterMaxWidthLabel         = tk.Label(         self.smallBlocksFilterFrame, text='Max Width', anchor=tk.W, relief=tk.GROOVE)
+        self.smallBlocksFilterMaxWidthSpinbox       = tk.Spinbox(       self.smallBlocksFilterFrame, from_=2, to_=200, textvariable=self.smallBlocksFilterMaxWidth, justify=tk.RIGHT, selectbackground=fouColor, command=self.update_parameters)
+        self.smallBlocksFilterMinHeightLabel        = tk.Label(         self.smallBlocksFilterFrame, text='Min Height', anchor=tk.W, relief=tk.GROOVE)
+        self.smallBlocksFilterMinHeightSpinbox      = tk.Spinbox(       self.smallBlocksFilterFrame, from_=1, to_=200, textvariable=self.smallBlocksFilterMinHeight, justify=tk.RIGHT, selectbackground=fouColor, command=self.update_parameters)
+        self.smallBlocksFilterMaxHeightLabel        = tk.Label(         self.smallBlocksFilterFrame, text='Max Height', anchor=tk.W, relief=tk.GROOVE)
+        self.smallBlocksFilterMaxHeightSpinbox      = tk.Spinbox(       self.smallBlocksFilterFrame, from_=2, to_=200, textvariable=self.smallBlocksFilterMaxHeight, justify=tk.RIGHT, selectbackground=fouColor, command=self.update_parameters)
+
+        self.smallBlocksFilterSeedLabel             = tk.Label(         self.smallBlocksFilterFrame, text='Seed (0 - 99999)', anchor=tk.W, relief=tk.GROOVE)
+        self.smallBlocksFilterSeedSpinbox           = tk.Spinbox(       self.smallBlocksFilterFrame, from_=0, to_=99999, textvariable=self.smallBlocksFilterSeed, justify=tk.RIGHT, selectbackground=fouColor)
+        self.smallBlocksFilterRandomSeedButton      = tk.Button(        self.smallBlocksFilterFrame, text=unicodeSymbols[0], font=('Arial', '13', 'bold'), height=1, width=3, command=lambda:self.smallBlocksFilterSeed.set(random.randint(0,99999)))
+        self.smallBlocksFilterRedXtooltip           = CreateToolTip(    self.smallBlocksFilterRandomSeedButton, 'Generate random Seed between 0 and 99999')
 
         #Screen Lines Filter
         self.screenLinesFilterFrame                 = tk.Frame(         self.configFilterFrame, width=(confWidth-23), height=400, highlightthickness=0)
@@ -454,25 +490,7 @@ class Application(tk.Frame):
         self.randomButton.grid(             column=1, row=1, padx=2, pady=2, sticky=tk.SE)
         self.renderButton.grid(             column=2, row=1, padx=2, pady=2, sticky=tk.SE)
         self.previewActiveCheckbutton.grid( column=0, row=1, padx=2, pady=2, sticky=tk.E)
-    
-    def browse_file(self):
-        tempSourceImagePath = ''
-        tempSourceImagePath = filedialog.askopenfilename(filetypes=(('JPEG','*.jpg *.jpeg'), ('PNG','*.png')))
-
-        if tempSourceImagePath:
-            self.sourceImagePath = tempSourceImagePath
-            self.sourceImage = Image.open(self.sourceImagePath)
-            self.sourceImage.load()
-            self.firstImageLoaded = True
-            self.sourceImage = self.sourceImage.convert('RGB')
-            self.tempImage = copy.deepcopy(self.sourceImage)
-
-            #Create and Load Thumbnail
-            self.update_preview()
-
-            #Set Parameters
-            self.update_parameters()
-        
+       
     def switch_filter_options(self, event):
         if self.filterListListbox.curselection():
             #Gets Name of the selected Filter as a String
@@ -505,7 +523,7 @@ class Application(tk.Frame):
                 self.rgbOffsetFilterRandomButton.grid(              column=1, row=0, padx=3, pady=2, sticky=tk.W)
 
             if selectedFilter == 'Big Blocks':  
-                self.bigBlocksFilterFrame.grid(                column=0, row=0, padx=0, pady=3, sticky=tk.NW)
+                self.bigBlocksFilterFrame.grid(                     column=0, row=0, padx=0, pady=3, sticky=tk.NW)
 
                 self.bigBlocksFilterBlockCountLabel.grid(           column=0, row=0, padx=2, pady=2, sticky=tk.W)
                 self.bigBlocksFilterBlockCountSpinbox.grid(         column=1, row=0, padx=2, pady=2, sticky=tk.W)
@@ -517,6 +535,24 @@ class Application(tk.Frame):
                 self.bigBlocksFilterSeedLabel.grid(                 column=0, row=3, padx=2, pady=2, sticky=tk.W)
                 self.bigBlocksFilterSeedSpinbox.grid(               column=1, row=3, padx=2, pady=2, sticky=tk.W)
                 self.bigBlocksFilterRandomSeedButton.grid(          column=2, row=3, padx=2, pady=2, sticky=tk.W)
+
+            if selectedFilter == 'Small Blocks':
+                self.smallBlocksFilterFrame.grid(                   column=0, row=0, padx=0, pady=3, sticky=tk.NW)
+
+                self.smallBlocksFilterBlockCountLabel.grid(         column=0, row=0, padx=2, pady=2, sticky=tk.W)
+                self.smallBlocksFilterBlockCountSpinbox.grid(       column=1, row=0, padx=2, pady=2, sticky=tk.W)
+                self.smallBlocksFilterMinWidthLabel.grid(           column=0, row=1, padx=2, pady=2, sticky=tk.W)
+                self.smallBlocksFilterMinWidthSpinbox.grid(         column=1, row=1, padx=2, pady=2, sticky=tk.W)
+                self.smallBlocksFilterMaxWidthLabel.grid(           column=0, row=2, padx=2, pady=2, sticky=tk.W)
+                self.smallBlocksFilterMaxWidthSpinbox.grid(         column=1, row=2, padx=2, pady=2, sticky=tk.W)
+                self.smallBlocksFilterMinHeightLabel.grid(          column=0, row=3, padx=2, pady=2, sticky=tk.W)
+                self.smallBlocksFilterMinHeightSpinbox.grid(        column=1, row=3, padx=2, pady=2, sticky=tk.W)
+                self.smallBlocksFilterMaxHeightLabel.grid(          column=0, row=4, padx=2, pady=2, sticky=tk.W)
+                self.smallBlocksFilterMaxHeightSpinbox.grid(        column=1, row=4, padx=2, pady=2, sticky=tk.W)
+                
+                self.smallBlocksFilterSeedLabel.grid(              column=0, row=5, padx=2, pady=2, sticky=tk.W)
+                self.smallBlocksFilterSeedSpinbox.grid(             column=1, row=5, padx=2, pady=2, sticky=tk.W)
+                self.smallBlocksFilterRandomSeedButton.grid(        column=2, row=5, padx=2, pady=2, sticky=tk.W)
 
             if selectedFilter == 'Screen Lines':
                 self.screenLinesFilterFrame.grid(              column=0, row=0, padx=0, pady=3, sticky=tk.NW)
@@ -633,6 +669,24 @@ class Application(tk.Frame):
                 self.rgbScreenFilterCanvas.config(height=self.configFilterFrame.winfo_height(),scrollregion=(0,0,self.configFilterFrame.winfo_width(), self.configFilterFrame.winfo_height()))
                 self.rgbScreenFilterScrollbar.grid(column=1, row=0, padx=1, sticky=tk.N+tk.S+tk.W)
 
+    def browse_file(self):
+        tempSourceImagePath = ''
+        tempSourceImagePath = filedialog.askopenfilename(filetypes=(('JPEG','*.jpg *.jpeg'), ('PNG','*.png')))
+
+        if tempSourceImagePath:
+            self.sourceImagePath = tempSourceImagePath
+            self.sourceImage = Image.open(self.sourceImagePath)
+            self.sourceImage.load()
+            self.firstImageLoaded = True
+            self.sourceImage = self.sourceImage.convert('RGB')
+            self.tempImage = copy.deepcopy(self.sourceImage)
+
+            #Create and Load Thumbnail
+            self.update_preview()
+
+            #Set Parameters
+            self.update_parameters()
+
     def update_parameters(self):
         #RGB Offset Filter
         self.rgbOffsetFilterRedXscale.config(to_=self.tempImage.width)
@@ -652,6 +706,14 @@ class Application(tk.Frame):
         #Big Blocks Filter
         self.bigBlocksFilterBlockMaxHeight.set(((self.tempImage.height)/100)*(100/self.bigBlocksFilterBlockCountVar.get()))
         self.bigBlocksFilterBlockMaxHeightSpinbox.config(to_=(self.bigBlocksFilterBlockMaxHeight.get()))
+
+        #Small Blocks Filter
+        self.smallBlocksFilterMaxHeightSpinbox.config(to_=self.tempImage.height)
+        self.smallBlocksFilterMaxWidthSpinbox.config(to_=self.tempImage.width)
+        if self.smallBlocksFilterMaxHeight.get() <= self.smallBlocksFilterMinHeight.get():
+            self.smallBlocksFilterMinHeight.set(self.smallBlocksFilterMaxHeight.get()-1)
+        if self.smallBlocksFilterMaxWidth.get() <= self.smallBlocksFilterMinWidth.get():
+            self.smallBlocksFilterMinWidth.set(self.smallBlocksFilterMaxWidth.get()-1)
 
         #Burning Noise Filter
         if self.burnNoiseFilterDark.get() >= self.burnNoiseFilterBright.get():
@@ -767,6 +829,14 @@ class Application(tk.Frame):
             for child in self.bigBlocksFilterFrame.winfo_children():
                 child.configure(state='disable')
 
+        #Small Blocks Offset
+        if self.smallBlocksFilterActiveState.get():
+            for child in self.smallBlocksFilterFrame.winfo_children():
+                child.configure(state='normal')
+        else:
+            for child in self.smallBlocksFilterFrame.winfo_children():
+                child.configure(state='disable')
+
         #Screen Lines
         if self.screenLinesFilterActiveState.get():
             for child in self.screenLinesFilterFrame.winfo_children():
@@ -879,6 +949,9 @@ class Application(tk.Frame):
         self.bigBlocksFilterBlockCountVar.set(random.randint(1, 8))
         self.bigBlocksFilterBlockMaxHeight.set(int(self.sourceImage.height/self.bigBlocksFilterBlockCountVar.get()))
         self.bigBlocksFilterSeedVar.set(random.randint(0,99999))
+
+        #Small Blocks Filter
+        self.smallBlocksFilterSeed.set(random.randint(0,99999))
 
         #Burn Noise Filter
         self.burnNoiseFilterStretchWidth.set(random.randint(30, 75))
@@ -1165,6 +1238,60 @@ class Application(tk.Frame):
             self.tempImage = copy.deepcopy(sImage)
             print('RGB Screen Filter: finished')
 
+    def smallBlocksFilter(self):
+        if self.smallBlocksFilterActiveState.get():
+            print('Small Blocks Filter: started')
+            random.seed(self.smallBlocksFilterSeed.get())
+            np.random.seed(self.smallBlocksFilterSeed.get())
+            sImage = copy.deepcopy(self.tempImage)
+            sImage.load()
+            width, height = sImage.size
+            size = width, height
+
+            x = 0
+            while(x < self.smallBlocksFilterBlocksCount.get()):
+                #Define height, width and all edges of chunk
+                randomHeight    = random.randint(self.smallBlocksFilterMinHeight.get(), self.smallBlocksFilterMaxHeight.get())
+                randomWidth     = random.randint(self.smallBlocksFilterMinWidth.get(), self.smallBlocksFilterMaxWidth.get())
+                randYtop        = random.randint(0, height-10)
+                randYbottom     = randYtop + randomHeight
+                randXleft       = random.randint(-randomWidth, width + randomWidth)
+                if randXleft < 0:
+                    randXleft = randXleft - randXleft
+                randXright      = randXleft + randomWidth
+                if randXright >= width:
+                    randXleft  = width - randXleft
+                    randXright = width
+
+                crop = (randXleft, randYtop, randXright, randYbottom)
+
+                #Cut chunk with predefined values
+                tempCrop = sImage.crop(crop)
+
+                r, g, b = tempCrop.split()        #RGB Channels of the source Image
+                tempCrop = Image.new('RGB', tempCrop.size, color=(0,0,0))
+                rNu, gNu, bNu = tempCrop.split()  #'RGB' Channels of the generated Image -> all black 
+                
+                #Randomly paste Chunk with given colors
+                rand = random.random()
+                if rand < 0.3:
+                    redImage = Image.merge('RGB' , (r, g, bNu))
+                    sImage.paste(redImage, crop)
+                elif 0.3 <= rand < 0.6:
+                    greenImage = Image.merge('RGB' , (rNu, g, b))
+                    sImage.paste(greenImage, crop)
+                else:
+                    blueImage = Image.merge('RGB' , (r, gNu, b))
+                    sImage.paste(blueImage, crop)
+
+                x += 1
+
+            self.tempImage = copy.deepcopy(sImage)
+
+            random.seed()
+            np.random.seed()
+            print('Small Blocks Filter: finished')
+
     def barrelFilter(self):
         z=0
         #if self.barrelFilterActiveState.get():
@@ -1181,6 +1308,23 @@ class Application(tk.Frame):
 
             del sImage, width, height, size
             print('Barrel Filter: finished')
+
+    def testFilter(self):
+        z=1
+        #if self.nameFilterActiveState.get():
+        if z:
+            print('Test Filter: started')
+            sImage = copy.deepcopy(self.tempImage)
+            sImage.load()
+            width, height = sImage.size
+            size = width, height
+            
+            gImage = copy.deepcopy(sImage)
+
+            #Implement Algorithm
+
+            self.tempImage = copy.deepcopy(sImage)
+            print('Test Filter: finished')
 
     #Filter Functions*********************************************************************************************************
     def rgbOffset_rand_values(self):
@@ -1237,20 +1381,22 @@ class filterListWindow(tk.Toplevel):
         #Define Widgets
         self.filterListFrame                = tk.LabelFrame(self, text='Active Filter')
 
-        self.rgbOffsetFilterCheckBox        = tk.Checkbutton(self.filterListFrame, text='RGB Offset', fg='black', variable=master.rgbOffsetFilterActiveState, command=master.refresh_filter)
-        self.bigBlocksFilterCheckBox        = tk.Checkbutton(self.filterListFrame, text='Big Blocks Offset', fg='black', variable=master.bigBlocksFilterActiveState, command=master.refresh_filter)
-        self.burnNoiseFilterCheckBox        = tk.Checkbutton(self.filterListFrame, text='Burning Noise', fg='black', variable=master.burnNoiseFilterActiveState, command=master.refresh_filter)
-        self.rgbScreenFilterCheckBox        = tk.Checkbutton(self.filterListFrame, text='RGB Screen', fg='black', variable=master.rgbScreenFilterActiveState, command=master.refresh_filter)
-        self.screenLinesFilterCheckBox      = tk.Checkbutton(self.filterListFrame, text='Screen Lines', fg='black', variable=master.screenLinesFilterActiveState, command=master.refresh_filter)
+        self.rgbOffsetFilterCheckBox        = tk.Checkbutton(self.filterListFrame, text='RGB Offset', selectcolor='gray30', variable=master.rgbOffsetFilterActiveState, command=master.refresh_filter)
+        self.bigBlocksFilterCheckBox        = tk.Checkbutton(self.filterListFrame, text='Big Blocks Offset', selectcolor='gray30', variable=master.bigBlocksFilterActiveState, command=master.refresh_filter)
+        self.smallBlocksFilterCheckBox      = tk.Checkbutton(self.filterListFrame, text='Small Blocks Offset', selectcolor='gray30', variable=master.smallBlocksFilterActiveState, command=master.refresh_filter)
+        self.burnNoiseFilterCheckBox        = tk.Checkbutton(self.filterListFrame, text='Burning Noise', selectcolor='gray30', variable=master.burnNoiseFilterActiveState, command=master.refresh_filter)
+        self.rgbScreenFilterCheckBox        = tk.Checkbutton(self.filterListFrame, text='RGB Screen', selectcolor='gray30', variable=master.rgbScreenFilterActiveState, command=master.refresh_filter)
+        self.screenLinesFilterCheckBox      = tk.Checkbutton(self.filterListFrame, text='Screen Lines', selectcolor='gray30', variable=master.screenLinesFilterActiveState, command=master.refresh_filter)
 
         #Display Widgets
         self.filterListFrame.grid(              column=0, row=0, sticky=tk.NW)
 
         self.rgbOffsetFilterCheckBox.grid(      column=0, row=0, sticky=tk.NW)
         self.bigBlocksFilterCheckBox.grid(      column=0, row=1, sticky=tk.NW)
-        self.burnNoiseFilterCheckBox.grid(      column=0, row=2, sticky=tk.NW)
-        self.rgbScreenFilterCheckBox.grid(      column=0, row=3, sticky=tk.NW)
-        self.screenLinesFilterCheckBox.grid(    column=0, row=4, sticky=tk.NW)
+        self.smallBlocksFilterCheckBox.grid(    column=0, row=2, sticky=tk.NW)
+        self.burnNoiseFilterCheckBox.grid(      column=0, row=3, sticky=tk.NW)
+        self.rgbScreenFilterCheckBox.grid(      column=0, row=4, sticky=tk.NW)
+        self.screenLinesFilterCheckBox.grid(    column=0, row=5, sticky=tk.NW)
 
     def hideWindow(self):
         self.withdraw()
