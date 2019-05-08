@@ -1,3 +1,4 @@
+#Python 3.7
 from PIL import Image, ImageChops, ImageTk, ImageColor, ImageDraw, ImageFilter, ImageStat
 from tkinter import filedialog, ttk
 from tkinter.messagebox import askyesno
@@ -27,6 +28,7 @@ class Application(tk.Frame):
         tk.Frame.__init__(self, master)
         self.pack()
 
+        self.sourceImagePath = ''                                       #Filepath to chosen Image
         self.sourceImage = Image.new('L', (1,1), color='pink')          #PIL Image of the chosen Image
         self.tempImage = self.sourceImage                               #PIL Image of the altered  Image
         self.thumbImage = tk.PhotoImage(self.tempImage.load())          #TkPhoto Image as a thumbnail
@@ -228,6 +230,7 @@ class Application(tk.Frame):
         #File
         self.menubar.add_cascade(label='File', menu=self.fileMenu)
         self.fileMenu.add_command(label='Open Image', command=self.browse_file)
+        self.fileMenu.add_command(label='Save', command=self.save_image)
         self.fileMenu.add_command(label='Save Image as...', command=self.save_image_as)
         self.fileMenu.add_command(label='Exit', command=self.quit_program)
 
@@ -445,10 +448,12 @@ class Application(tk.Frame):
         self.previewActiveCheckbutton.grid( column=0, row=1, padx=2, pady=2, sticky=tk.E)
     
     def browse_file(self):
-        sourceImagePath = filedialog.askopenfilename(filetypes=(('JPEG','*.jpg *.jpeg'), ('PNG','*.png')))
+        tempSourceImagePath = ''
+        tempSourceImagePath = filedialog.askopenfilename(filetypes=(('JPEG','*.jpg *.jpeg'), ('PNG','*.png')))
 
-        if sourceImagePath:
-            self.sourceImage = Image.open(sourceImagePath)
+        if tempSourceImagePath:
+            self.sourceImagePath = tempSourceImagePath
+            self.sourceImage = Image.open(self.sourceImagePath)
             self.sourceImage.load()
             self.firstImageLoaded = True
             self.sourceImage = self.sourceImage.convert('RGB')
@@ -676,17 +681,22 @@ class Application(tk.Frame):
             else:
                 self.screenLinesFilterLineColorLabel.configure(fg='white')
 
+    def save_image(self):
+        if self.firstImageLoaded:
+            filename, extension = os.path.splitext(self.sourceImagePath)
+            self.tempImage.save('{}{}{}'.format(filename, '-GlitchFilter', extension))
+            self.isImageSaved = True
+
     def save_image_as(self):
         tempFilePath = ''
         if self.firstImageLoaded:
-            fileTypes = [   ('JPEG','*.jpg, *.jpeg'), 
-                            ('PNG','*.png'), 
-                            ("all files","*.*")]
-            tempFilePath = filedialog.asksaveasfilename(initialdir='/', title='Save file...', filetypes=fileTypes)
+            fileTypes = [   ("all files","*.*"), 
+                            ('JPEG','*.jpg *.jpeg'), 
+                            ('PNG','*.png')]
+            tempFilePath = filedialog.asksaveasfilename(initialdir='/', title='Save file...', filetypes=fileTypes, defaultextension="*.*")
         if tempFilePath:
             self.tempImage.save(tempFilePath)
             self.isImageSaved = True
-            del tempFilePath
 
     def create_thumbnail(self, image):
         tempThumbImage = copy.deepcopy(image)
