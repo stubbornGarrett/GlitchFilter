@@ -4,6 +4,7 @@ from tkinter import filedialog, ttk
 from tkinter.messagebox import askyesno
 import tkinter as tk
 import numpy as np
+import blend_modes
 import random
 import os
 import copy
@@ -119,11 +120,14 @@ class Application(tk.Frame):
 
         #Screen Lines parameters
         self.screenLinesFilterLineDensity = tk.IntVar()
-        self.screenLinesFilterLineDensity.set(40)
+        self.screenLinesFilterLineDensity.set(42)
         self.screenLinesFilterLineThickness = tk.IntVar()
-        self.screenLinesFilterLineThickness.set(8)
+        self.screenLinesFilterLineThickness.set(5)
         self.screenLinesFilterLineBlur = tk.IntVar()
-        self.screenLinesFilterLineBlur.set(2)
+        self.screenLinesFilterLineBlur.set(1)
+        self.screenLinesFilterBlendmodeList = ['Soft Light', 'Lighten Only', 'Darken Only', 'Addition', 'Subtract', 'Divide', 'Grain Merge']
+        self.screenLinesFilterBlendmode = tk.StringVar()
+        self.screenLinesFilterBlendmode.set(self.screenLinesFilterBlendmodeList[0])
 
         self.screenLinesFilterRandomVar = tk.IntVar()
         self.screenLinesFilterRandomVar.set(0)
@@ -131,13 +135,13 @@ class Application(tk.Frame):
         self.screenLinesFilterInvert.set(0)
 
         self.screenLinesFilterLineColorRed = tk.IntVar()
-        self.screenLinesFilterLineColorRed.set(50)
+        self.screenLinesFilterLineColorRed.set(255)
         self.screenLinesFilterLineColorRed.trace('w', self.update_labels)
         self.screenLinesFilterLineColorGreen = tk.IntVar()
-        self.screenLinesFilterLineColorGreen.set(60)
+        self.screenLinesFilterLineColorGreen.set(255)
         self.screenLinesFilterLineColorGreen.trace('w', self.update_labels)
         self.screenLinesFilterLineColorBlue = tk.IntVar()
-        self.screenLinesFilterLineColorBlue.set(50)
+        self.screenLinesFilterLineColorBlue.set(255)
         self.screenLinesFilterLineColorBlue.trace('w', self.update_labels)
 
         self.screenLinesFilterActiveState = tk.IntVar()
@@ -309,10 +313,14 @@ class Application(tk.Frame):
         self.screenLinesFilterLineThicknessSpinbox  = tk.Spinbox(       self.screenLinesFilterFrame, from_=0, to_=9999, textvariable=self.screenLinesFilterLineThickness, justify=tk.RIGHT, selectbackground=fouColor)
         self.screenLinesFilterLineBlurLabel         = tk.Label(         self.screenLinesFilterFrame, text='Blur (px)', anchor=tk.W, relief=tk.GROOVE)
         self.screenLinesFilterLineBlurSpinbox       = tk.Spinbox(       self.screenLinesFilterFrame, from_=0, to_=9999, textvariable=self.screenLinesFilterLineBlur, justify=tk.RIGHT, selectbackground=fouColor)
+        self.screenLinesFilterBlendmodeLabel        = tk.Label(         self.screenLinesFilterFrame, text='Blend Mode', anchor=tk.W, relief=tk.GROOVE)
+        self.screenLinesFilterBlendmodeOptionmenu   = tk.OptionMenu(    self.screenLinesFilterFrame, self.screenLinesFilterBlendmode, *self.screenLinesFilterBlendmodeList)
+        self.screenLinesFilterBlendmodeOptionmenu['menu'].config(bg=secColor)
+        self.screenLinesFilterBlendmodeOptionmenu.config(bg=secColor)
 
         self.screenLinesFilterCheckbuttonFrame      = tk.Frame(         self.screenLinesFilterFrame)
         self.screenLinesFilterRandomCheckbutton     = tk.Checkbutton(   self.screenLinesFilterCheckbuttonFrame, text='Random', selectcolor='gray30', variable=self.screenLinesFilterRandomVar)
-        
+
         self.screenLinesFilterColorFrame            = tk.Frame(         self.screenLinesFilterFrame)
 
         self.screenLinesFilterLineColorLabel        = tk.Label(         self.screenLinesFilterColorFrame, text='Line Color', width=43, anchor=tk.W, relief=tk.GROOVE)
@@ -508,7 +516,7 @@ class Application(tk.Frame):
                 self.bigBlocksFilterBlockMaxOffsetScale.grid(       column=2, row=2, padx=2, pady=2, sticky=tk.W)
                 self.bigBlocksFilterSeedLabel.grid(                 column=0, row=3, padx=2, pady=2, sticky=tk.W)
                 self.bigBlocksFilterSeedSpinbox.grid(               column=1, row=3, padx=2, pady=2, sticky=tk.W)
-                self.bigBlocksFilterRandomSeedButton.grid(          column=2, row=3, padx=2, pady=2, sticky=tk.W)#, columnspan=1)
+                self.bigBlocksFilterRandomSeedButton.grid(          column=2, row=3, padx=2, pady=2, sticky=tk.W)
 
             if selectedFilter == 'Screen Lines':
                 self.screenLinesFilterFrame.grid(              column=0, row=0, padx=0, pady=3, sticky=tk.NW)
@@ -520,9 +528,11 @@ class Application(tk.Frame):
                 self.screenLinesFilterLineThicknessSpinbox.grid(    column=1, row=1, padx=2, pady=2, sticky=tk.W)
                 self.screenLinesFilterLineBlurLabel.grid(           column=0, row=2, padx=2, pady=2, sticky=tk.W)
                 self.screenLinesFilterLineBlurSpinbox.grid(         column=1, row=2, padx=2, pady=2, sticky=tk.W)
+                self.screenLinesFilterBlendmodeLabel.grid(          column=0, row=3, padx=2, pady=2, sticky=tk.W)
+                self.screenLinesFilterBlendmodeOptionmenu.grid(     column=1, row=3, padx=0, pady=2, sticky=tk.W, columnspan=2)
 
-                self.screenLinesFilterCheckbuttonFrame.grid(        column=0, row=3, padx=2, pady=2, sticky=tk.W, columnspan=3)
-                self.screenLinesFilterRandomCheckbutton.grid(       column=0, row=0, padx=0, pady=2, sticky=tk.W)#, columnspan=2)
+                self.screenLinesFilterCheckbuttonFrame.grid(        column=0, row=4, padx=2, pady=2, sticky=tk.W, columnspan=3)
+                self.screenLinesFilterRandomCheckbutton.grid(       column=0, row=0, padx=0, pady=2, sticky=tk.W)
 
                 self.screenLinesFilterColorFrame.grid(              column=0, row=5, padx=2, pady=2, columnspan=3, sticky=tk.N)
 
@@ -983,7 +993,7 @@ class Application(tk.Frame):
             size = width, height
 
             maskImage       = Image.new('RGB', size, color=(0,0,0))
-            draw            = ImageDraw.Draw(maskImage)
+            draw            = ImageDraw.Draw(maskImage, 'RGB')
 
             try:    #Catch division by zero
                 lineSpacing     = int(100 / self.screenLinesFilterLineDensity.get())
@@ -1004,12 +1014,40 @@ class Application(tk.Frame):
                     lineColor = (int(self.screenLinesFilterLineColorRed.get() * lineColorScale), int(self.screenLinesFilterLineColorGreen.get() * lineColorScale), int(self.screenLinesFilterLineColorBlue.get() * lineColorScale))
                 draw.line(((0,x*(lineSpacing+self.screenLinesFilterLineThickness.get())), (width,x*(lineSpacing+self.screenLinesFilterLineThickness.get()))), fill=lineColor, width=self.screenLinesFilterLineThickness.get())
 
-            maskImage = maskImage.filter(ImageFilter.GaussianBlur(self.screenLinesFilterLineBlur.get()))
+            del draw
+            maskImage   = maskImage.filter(ImageFilter.GaussianBlur(self.screenLinesFilterLineBlur.get()))
+            maskImage   = maskImage.convert('RGBA')
+            sImage      = sImage.convert('RGBA')
 
-            #Implement option to Switch Filter mode***************
-            #sImage = ImageChops.subtract(sImage, maskImage)
-            sImage = ImageChops.screen(sImage, maskImage)
-            #sImage = ImageChops.darker(sImage, maskImage)
+            maskImage   = np.array(maskImage)   #Convert Pillow Image to numpy array,
+            sImage      = np.array(sImage)      # for usage in blend_modes module
+            maskImage   = maskImage.astype(float)
+            sImage      = sImage.astype(float)
+
+            if self.screenLinesFilterBlendmode.get() == 'Soft Light':
+                sImage = blend_modes.soft_light(sImage, maskImage, 1.0)
+
+            if self.screenLinesFilterBlendmode.get() == 'Lighten Only':
+                sImage = blend_modes.lighten_only(sImage, maskImage, 1.0)
+
+            if self.screenLinesFilterBlendmode.get() == 'Addition':
+                sImage = blend_modes.addition(sImage, maskImage, 1.0)
+
+            if self.screenLinesFilterBlendmode.get() == 'Darken Only':
+                sImage = blend_modes.darken_only(sImage, maskImage, 1.0)
+
+            if self.screenLinesFilterBlendmode.get() == 'Subtract':
+                sImage = blend_modes.subtract(sImage, maskImage, 1.0)
+
+            if self.screenLinesFilterBlendmode.get() == 'Grain Merge':
+                sImage = blend_modes.grain_merge(sImage, maskImage, 1.0)
+                
+            if self.screenLinesFilterBlendmode.get() == 'Divide':
+                sImage = blend_modes.divide(sImage, maskImage, 1.0)
+
+            sImage = np.uint8(sImage)
+            sImage = Image.fromarray(sImage)
+            sImage = sImage.convert('RGB')
 
             self.tempImage = copy.deepcopy(sImage)
             print('Screen Lines Filter: finished')
