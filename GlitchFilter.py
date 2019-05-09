@@ -1,7 +1,7 @@
 #Python 3.7
 from PIL import Image, ImageChops, ImageTk, ImageColor, ImageDraw, ImageFilter, ImageStat
 from tkinter import filedialog, ttk
-from tkinter.messagebox import askyesno
+from tkinter.messagebox import askyesno, showinfo, showwarning, showerror
 import tkinter as tk
 import numpy as np
 import blend_modes
@@ -11,6 +11,19 @@ import copy
 import math
 import time
 import threading
+import logging
+
+#Logger
+glitchLogger = logging.getLogger(__name__)
+glitchLogger.setLevel(logging.DEBUG)
+
+glitchFormatter = logging.Formatter('%(asctime)s) - %(levelname)s: %(message)s')
+
+glitchFileHandler = logging.FileHandler('GlitchFilterLog.log')
+glitchFileHandler.setLevel(logging.DEBUG)
+glitchFileHandler.setFormatter(glitchFormatter)
+
+glitchLogger.addHandler(glitchFileHandler)
 
 #global settings
 HEIGHT      = 800
@@ -47,7 +60,7 @@ class Application(tk.Frame):
         try:
             self.master.iconbitmap('GlitchFilterIcon.ico')
         except:
-            pass
+            glitchLogger.warning("Icon couldn't be loaded - main window")
 
         #Main Variables
         self.filterQueue        = [self.rgbOffsetFilter, self.bigBlocksFilter, self.smallBlocksFilter, self.burnNoiseFilter, self.rgbScreenFilter, self.screenLinesFilter, self.testFilter]
@@ -70,13 +83,31 @@ class Application(tk.Frame):
         self.aboutWindowOpen = False
 
         #Create parameters for the Filters and insert default Values
-        self.create_parameters()
+        try:
+            self.create_parameters()
+            glitchLogger.info('Initial creation of parameters successful...')
+        except:
+            glitchLogger.exception('Initial creation of parameters failed!')
+            showerror('Fatal Error', 'Initial creation of parameters failed!')
+            raise
 
         #Create all Widgets
-        self.create_widgets()
+        try:
+            self.create_widgets()
+            glitchLogger.info('Initial creation of widgets successful...')
+        except:
+            glitchLogger.exception('Initial creation of widgets failed!')
+            showerror('Fatal Error', 'Initial creation of widgets failed!')
+            raise
 
         #Checks for activated Filters
-        self.refresh_filter()
+        try:
+            self.refresh_filter()
+            glitchLogger.info('Initial refresh of filter successful...')
+        except:
+            glitchLogger.exception('Initial refresh of filter failed!')
+            showerror('Fatal Error', 'Initial refresh of filter failed!')
+            raise
 
         self.setupFinished = True
 
@@ -1260,8 +1291,11 @@ class Application(tk.Frame):
                     randXleft = randXleft - randXleft
                 randXright      = randXleft + randomWidth
                 if randXright >= width:
-                    randXleft  = width - randXleft
+                    randXleft  = width - randomWidth
                     randXright = width
+
+                print('Left: ',randXleft)
+                print('Right: ',randXright)
 
                 crop = (randXleft, randYtop, randXright, randYbottom)
 
@@ -1373,7 +1407,7 @@ class filterListWindow(tk.Toplevel):
         try:
             self.iconbitmap('GlitchFilterIcon.ico')
         except:
-            pass
+            glitchLogger.warning("Icon couldn't be loaded - filter list window")
         self.resizable(False, False)
         self.transient(master)
         self.protocol('WM_DELETE_WINDOW', self.hideWindow)
@@ -1411,7 +1445,7 @@ class presetListWindow(tk.Toplevel):
         try:
             self.iconbitmap('GlitchFilterIcon.ico')
         except:
-            pass
+            glitchLogger.warning("Icon couldn't be loaded - preset list window")
         self.resizable(False, False)
         self.transient(master)
         self.protocol('WM_DELETE_WINDOW', self.hideWindow)
@@ -1452,7 +1486,7 @@ class aboutWindow(tk.Toplevel):
         try:
             self.master.iconbitmap('GlitchFilterIcon.ico')
         except:
-            pass
+            glitchLogger.warning("Icon couldn't be loaded - about window")
         self.protocol('WM_DELETE_WINDOW', self.destroyWindow)
         
     #INSERT CONTENT HERE
@@ -1524,21 +1558,25 @@ class CreateToolTip(object):
 
 
 def main():
-    root = tk.Tk()
-    
-    root.option_add('*Font', ('Tahoma', 11))
-    root.option_add('*Label.width', '18')
-    root.option_add('*Label.width', '20')
-    root.option_add('*Label.background', thiColor)
-    root.option_add('*Spinbox.width', '5')
-    root.option_add('*Listbox.background', secColor)
-    root.option_add('*Button.background', secColor)
-    root.option_add('*Spinbox.background', secColor)
-    root.option_add('*Scale.background', secColor)
-    root.option_add('*Scale.troughcolor', secColor)
+    try:
+        root = tk.Tk()
 
-    application = Application(root)
-    application.mainloop()
+        root.option_add('*Font', ('Tahoma', 11))
+        root.option_add('*Label.width', '18')
+        root.option_add('*Label.width', '20')
+        root.option_add('*Label.background', thiColor)
+        root.option_add('*Spinbox.width', '5')
+        root.option_add('*Listbox.background', secColor)
+        root.option_add('*Button.background', secColor)
+        root.option_add('*Spinbox.background', secColor)
+        root.option_add('*Scale.background', secColor)
+        root.option_add('*Scale.troughcolor', secColor)
+
+        application = Application(root)
+    except Exception:
+        glitchLogger.critical('Initalisation of window failed!')
+    else:
+        application.mainloop()
 
 if __name__ == '__main__':
     main()
