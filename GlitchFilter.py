@@ -2,6 +2,8 @@
 from PIL import Image, ImageChops, ImageTk, ImageColor, ImageDraw, ImageFilter, ImageStat
 from tkinter import filedialog, ttk
 from tkinter.messagebox import askyesno, showinfo, showwarning, showerror
+from logging.handlers import RotatingFileHandler
+import logging
 import tkinter as tk
 import numpy as np
 import blend_modes
@@ -10,20 +12,22 @@ import os
 import copy
 import math
 import time
+import datetime
 import threading
-import logging
 
 #Logger
 glitchLogger = logging.getLogger(__name__)
 glitchLogger.setLevel(logging.DEBUG)
 
-glitchFormatter = logging.Formatter('%(asctime)s) - %(levelname)s: %(message)s')
-
-glitchFileHandler = logging.FileHandler('GlitchFilterLog.log')
-glitchFileHandler.setLevel(logging.DEBUG)
-glitchFileHandler.setFormatter(glitchFormatter)
+glitchFileHandler = RotatingFileHandler('GlitchFilterLog.log', maxBytes=2000000, backupCount=2)
+glitchFileHandler.setLevel(logging.INFO)
 
 glitchLogger.addHandler(glitchFileHandler)
+
+glitchLogger.info('******************** {} - Session ********************'.format(datetime.datetime.now()))
+
+glitchFormatter = logging.Formatter('%(asctime)s) - %(levelname)s: %(message)s')
+glitchFileHandler.setFormatter(glitchFormatter)
 
 #global settings
 HEIGHT      = 800
@@ -42,10 +46,16 @@ class Application(tk.Frame):
         tk.Frame.__init__(self, master)
         self.pack()
 
-        self.sourceImagePath = ''                                       #Filepath to chosen Image
+        self.sourceImagePath        = ''                                #Filepath to chosen Image
+        self.sourceImageExtension  = ".png"                             #Extension of chosen Image
         self.sourceImage = Image.new('L', (1,1), color='pink')          #PIL Image of the chosen Image
         self.tempImage = self.sourceImage                               #PIL Image of the altered  Image
         self.thumbImage = tk.PhotoImage(self.tempImage.load())          #TkPhoto Image as a thumbnail
+
+        self.FILEOPTIONS =  dict(   filetypes=[\
+                                    ('JPEG','*.jpg *.jpeg'), 
+                                    ('PNG','*.png'),
+                                    ("all files","*.*")])
 
         #Main Window parameters
         self.master.resizable(False, False)
@@ -113,6 +123,8 @@ class Application(tk.Frame):
 
         #Updates colored Labels
         self.update_labels()
+
+        glitchLogger.info('Initialisation succeeded...')
 
 
     def create_parameters(self):
@@ -282,10 +294,14 @@ class Application(tk.Frame):
 
         #File
         self.menubar.add_cascade(label='File', menu=self.fileMenu)
-        self.fileMenu.add_command(label='Open Image', command=self.browse_file)
-        self.fileMenu.add_command(label='Save', command=self.save_image)
-        self.fileMenu.add_command(label='Save Image as...', command=self.save_image_as)
+        self.fileMenu.add_command(label='Open Image', accelerator='Ctrl+O', command=self.browse_file)
+        self.fileMenu.add_command(label='Save', accelerator='Ctrl+S', command=self.save_image)
+        self.fileMenu.add_command(label='Save Image as...', accelerator='Ctrl+Alt+S', command=self.save_image_as)
         self.fileMenu.add_command(label='Exit', command=self.quit_program)
+        
+        self.bind_all('<Control-o>', self.browse_file)
+        self.bind_all('<Control-s>', self.save_image)
+        self.bind_all('<Control-Alt-s>', self.save_image_as)
 
         #Help
         self.menubar.add_cascade(label='Help', menu=self.helpMenu)
@@ -524,413 +540,447 @@ class Application(tk.Frame):
        
     def switch_filter_options(self, event):
         if self.filterListListbox.curselection():
-            #Gets Name of the selected Filter as a String
-            selectedFilter = self.filterList[int(' '.join(map(str, self.filterListListbox.curselection())))]
+            try:
+                #Gets Name of the selected Filter as a String
+                selectedFilter = self.filterList[int(' '.join(map(str, self.filterListListbox.curselection())))]
 
-            #Clears Filterconfig-Frame
-            for child in self.configFilterFrame.winfo_children():
-                child.grid_forget()
+                #Clears Filterconfig-Frame
+                for child in self.configFilterFrame.winfo_children():
+                    child.grid_forget()
 
-            #Looks for active Filter Configuration and positions widgets
-            if selectedFilter == 'RGB Offset':
-                self.rgbOffsetFilterCanvas.grid(                    column=0, row=0, padx=0, pady=3, sticky=tk.NW)
-                self.rgbOffsetFilterCanvas.grid_propagate(0)
+                #Looks for active Filter Configuration and positions widgets
+                if selectedFilter == 'RGB Offset':
+                    self.rgbOffsetFilterCanvas.grid(                    column=0, row=0, padx=0, pady=3, sticky=tk.NW)
+                    self.rgbOffsetFilterCanvas.grid_propagate(0)
 
-                self.rgbOffsetFilterRedXlabel.grid(                 column=0, row=0, padx=2, pady=2, sticky=tk.W)
-                self.rgbOffsetFilterRedXscale.grid(                 column=1, row=0, padx=2, pady=2, sticky=tk.E)
-                self.rgbOffsetFilterRedYlabel.grid(                 column=0, row=1, padx=2, pady=2, sticky=tk.W)
-                self.rgbOffsetFilterRedYscale.grid(                 column=1, row=1, padx=2, pady=2, sticky=tk.E)
-                self.rgbOffsetFilterGreenXlabel.grid(               column=0, row=2, padx=2, pady=2, sticky=tk.W)
-                self.rgbOffsetFilterGreenXscale.grid(               column=1, row=2, padx=2, pady=2, sticky=tk.E)
-                self.rgbOffsetFilterGreenYlabel.grid(               column=0, row=3, padx=2, pady=2, sticky=tk.W)
-                self.rgbOffsetFilterGreenYscale.grid(               column=1, row=3, padx=2, pady=2, sticky=tk.E)
-                self.rgbOffsetFilterBlueXlabel.grid(                column=0, row=4, padx=2, pady=2, sticky=tk.W)
-                self.rgbOffsetFilterBlueXscale.grid(                column=1, row=4, padx=2, pady=2, sticky=tk.E)
-                self.rgbOffsetFilterBlueYlabel.grid(                column=0, row=5, padx=2, pady=2, sticky=tk.W)
-                self.rgbOffsetFilterBlueYscale.grid(                column=1, row=5, padx=2, pady=2, sticky=tk.E)
+                    self.rgbOffsetFilterRedXlabel.grid(                 column=0, row=0, padx=2, pady=2, sticky=tk.W)
+                    self.rgbOffsetFilterRedXscale.grid(                 column=1, row=0, padx=2, pady=2, sticky=tk.E)
+                    self.rgbOffsetFilterRedYlabel.grid(                 column=0, row=1, padx=2, pady=2, sticky=tk.W)
+                    self.rgbOffsetFilterRedYscale.grid(                 column=1, row=1, padx=2, pady=2, sticky=tk.E)
+                    self.rgbOffsetFilterGreenXlabel.grid(               column=0, row=2, padx=2, pady=2, sticky=tk.W)
+                    self.rgbOffsetFilterGreenXscale.grid(               column=1, row=2, padx=2, pady=2, sticky=tk.E)
+                    self.rgbOffsetFilterGreenYlabel.grid(               column=0, row=3, padx=2, pady=2, sticky=tk.W)
+                    self.rgbOffsetFilterGreenYscale.grid(               column=1, row=3, padx=2, pady=2, sticky=tk.E)
+                    self.rgbOffsetFilterBlueXlabel.grid(                column=0, row=4, padx=2, pady=2, sticky=tk.W)
+                    self.rgbOffsetFilterBlueXscale.grid(                column=1, row=4, padx=2, pady=2, sticky=tk.E)
+                    self.rgbOffsetFilterBlueYlabel.grid(                column=0, row=5, padx=2, pady=2, sticky=tk.W)
+                    self.rgbOffsetFilterBlueYscale.grid(                column=1, row=5, padx=2, pady=2, sticky=tk.E)
 
-                self.rgbOffsetFilterBottomFrame.grid(               column=0, row=6, padx=1, pady=0, sticky=tk.W, columnspan=2)
-                self.rgbOffsetFilterBetterCheckButton.grid(         column=0, row=0, padx=1, pady=0, sticky=tk.W)
-                self.rgbOffsetFilterRandomButton.grid(              column=1, row=0, padx=3, pady=2, sticky=tk.W)
+                    self.rgbOffsetFilterBottomFrame.grid(               column=0, row=6, padx=1, pady=0, sticky=tk.W, columnspan=2)
+                    self.rgbOffsetFilterBetterCheckButton.grid(         column=0, row=0, padx=1, pady=0, sticky=tk.W)
+                    self.rgbOffsetFilterRandomButton.grid(              column=1, row=0, padx=3, pady=2, sticky=tk.W)
 
-            if selectedFilter == 'Big Blocks':  
-                self.bigBlocksFilterFrame.grid(                     column=0, row=0, padx=0, pady=3, sticky=tk.NW)
+                if selectedFilter == 'Big Blocks':  
+                    self.bigBlocksFilterFrame.grid(                     column=0, row=0, padx=0, pady=3, sticky=tk.NW)
 
-                self.bigBlocksFilterBlockCountLabel.grid(           column=0, row=0, padx=2, pady=2, sticky=tk.W)
-                self.bigBlocksFilterBlockCountSpinbox.grid(         column=1, row=0, padx=2, pady=2, sticky=tk.W)
-                self.bigBlocksFilterBlockMaxHeightLabel.grid(       column=0, row=1, padx=2, pady=2, sticky=tk.W)
-                self.bigBlocksFilterBlockMaxHeightSpinbox.grid(     column=1, row=1, padx=2, pady=2, sticky=tk.W)
-                self.bigBlocksFilterBlockMaxOffsetLabel.grid(       column=0, row=2, padx=2, pady=2, sticky=tk.W)
-                self.bigBlocksFilterBlockMaxOffsetSpinbox.grid(     column=1, row=2, padx=2, pady=2, sticky=tk.W)
-                self.bigBlocksFilterBlockMaxOffsetScale.grid(       column=2, row=2, padx=2, pady=2, sticky=tk.W)
-                self.bigBlocksFilterSeedLabel.grid(                 column=0, row=3, padx=2, pady=2, sticky=tk.W)
-                self.bigBlocksFilterSeedSpinbox.grid(               column=1, row=3, padx=2, pady=2, sticky=tk.W)
-                self.bigBlocksFilterRandomSeedButton.grid(          column=2, row=3, padx=2, pady=2, sticky=tk.W)
+                    self.bigBlocksFilterBlockCountLabel.grid(           column=0, row=0, padx=2, pady=2, sticky=tk.W)
+                    self.bigBlocksFilterBlockCountSpinbox.grid(         column=1, row=0, padx=2, pady=2, sticky=tk.W)
+                    self.bigBlocksFilterBlockMaxHeightLabel.grid(       column=0, row=1, padx=2, pady=2, sticky=tk.W)
+                    self.bigBlocksFilterBlockMaxHeightSpinbox.grid(     column=1, row=1, padx=2, pady=2, sticky=tk.W)
+                    self.bigBlocksFilterBlockMaxOffsetLabel.grid(       column=0, row=2, padx=2, pady=2, sticky=tk.W)
+                    self.bigBlocksFilterBlockMaxOffsetSpinbox.grid(     column=1, row=2, padx=2, pady=2, sticky=tk.W)
+                    self.bigBlocksFilterBlockMaxOffsetScale.grid(       column=2, row=2, padx=2, pady=2, sticky=tk.W)
+                    self.bigBlocksFilterSeedLabel.grid(                 column=0, row=3, padx=2, pady=2, sticky=tk.W)
+                    self.bigBlocksFilterSeedSpinbox.grid(               column=1, row=3, padx=2, pady=2, sticky=tk.W)
+                    self.bigBlocksFilterRandomSeedButton.grid(          column=2, row=3, padx=2, pady=2, sticky=tk.W)
 
-            if selectedFilter == 'Small Blocks':
-                self.smallBlocksFilterFrame.grid(                   column=0, row=0, padx=0, pady=3, sticky=tk.NW)
+                if selectedFilter == 'Small Blocks':
+                    self.smallBlocksFilterFrame.grid(                   column=0, row=0, padx=0, pady=3, sticky=tk.NW)
 
-                self.smallBlocksFilterBlockCountLabel.grid(         column=0, row=0, padx=2, pady=2, sticky=tk.W)
-                self.smallBlocksFilterBlockCountSpinbox.grid(       column=1, row=0, padx=2, pady=2, sticky=tk.W)
-                self.smallBlocksFilterMinWidthLabel.grid(           column=0, row=1, padx=2, pady=2, sticky=tk.W)
-                self.smallBlocksFilterMinWidthSpinbox.grid(         column=1, row=1, padx=2, pady=2, sticky=tk.W)
-                self.smallBlocksFilterMaxWidthLabel.grid(           column=0, row=2, padx=2, pady=2, sticky=tk.W)
-                self.smallBlocksFilterMaxWidthSpinbox.grid(         column=1, row=2, padx=2, pady=2, sticky=tk.W)
-                self.smallBlocksFilterMinHeightLabel.grid(          column=0, row=3, padx=2, pady=2, sticky=tk.W)
-                self.smallBlocksFilterMinHeightSpinbox.grid(        column=1, row=3, padx=2, pady=2, sticky=tk.W)
-                self.smallBlocksFilterMaxHeightLabel.grid(          column=0, row=4, padx=2, pady=2, sticky=tk.W)
-                self.smallBlocksFilterMaxHeightSpinbox.grid(        column=1, row=4, padx=2, pady=2, sticky=tk.W)
-                
-                self.smallBlocksFilterSeedLabel.grid(              column=0, row=5, padx=2, pady=2, sticky=tk.W)
-                self.smallBlocksFilterSeedSpinbox.grid(             column=1, row=5, padx=2, pady=2, sticky=tk.W)
-                self.smallBlocksFilterRandomSeedButton.grid(        column=2, row=5, padx=2, pady=2, sticky=tk.W)
+                    self.smallBlocksFilterBlockCountLabel.grid(         column=0, row=0, padx=2, pady=2, sticky=tk.W)
+                    self.smallBlocksFilterBlockCountSpinbox.grid(       column=1, row=0, padx=2, pady=2, sticky=tk.W)
+                    self.smallBlocksFilterMinWidthLabel.grid(           column=0, row=1, padx=2, pady=2, sticky=tk.W)
+                    self.smallBlocksFilterMinWidthSpinbox.grid(         column=1, row=1, padx=2, pady=2, sticky=tk.W)
+                    self.smallBlocksFilterMaxWidthLabel.grid(           column=0, row=2, padx=2, pady=2, sticky=tk.W)
+                    self.smallBlocksFilterMaxWidthSpinbox.grid(         column=1, row=2, padx=2, pady=2, sticky=tk.W)
+                    self.smallBlocksFilterMinHeightLabel.grid(          column=0, row=3, padx=2, pady=2, sticky=tk.W)
+                    self.smallBlocksFilterMinHeightSpinbox.grid(        column=1, row=3, padx=2, pady=2, sticky=tk.W)
+                    self.smallBlocksFilterMaxHeightLabel.grid(          column=0, row=4, padx=2, pady=2, sticky=tk.W)
+                    self.smallBlocksFilterMaxHeightSpinbox.grid(        column=1, row=4, padx=2, pady=2, sticky=tk.W)
 
-            if selectedFilter == 'Screen Lines':
-                self.screenLinesFilterFrame.grid(              column=0, row=0, padx=0, pady=3, sticky=tk.NW)
+                    self.smallBlocksFilterSeedLabel.grid(              column=0, row=5, padx=2, pady=2, sticky=tk.W)
+                    self.smallBlocksFilterSeedSpinbox.grid(             column=1, row=5, padx=2, pady=2, sticky=tk.W)
+                    self.smallBlocksFilterRandomSeedButton.grid(        column=2, row=5, padx=2, pady=2, sticky=tk.W)
 
-                self.screenLinesFilterLineDensityLabel.grid(        column=0, row=0, padx=2, pady=2, sticky=tk.W)
-                self.screenLinesFilterLineDensitySpinbox.grid(      column=1, row=0, padx=2, pady=2, sticky=tk.W)
-                self.screenLinesFilterLineDensityScale.grid(        column=2, row=0, padx=2, pady=2, sticky=tk.W)
-                self.screenLinesFilterLineThicknessLabel.grid(      column=0, row=1, padx=2, pady=2, sticky=tk.W)
-                self.screenLinesFilterLineThicknessSpinbox.grid(    column=1, row=1, padx=2, pady=2, sticky=tk.W)
-                self.screenLinesFilterLineBlurLabel.grid(           column=0, row=2, padx=2, pady=2, sticky=tk.W)
-                self.screenLinesFilterLineBlurSpinbox.grid(         column=1, row=2, padx=2, pady=2, sticky=tk.W)
-                self.screenLinesFilterBlendmodeLabel.grid(          column=0, row=3, padx=2, pady=2, sticky=tk.W)
-                self.screenLinesFilterBlendmodeOptionmenu.grid(     column=1, row=3, padx=0, pady=2, sticky=tk.W, columnspan=2)
+                if selectedFilter == 'Screen Lines':
+                    self.screenLinesFilterFrame.grid(              column=0, row=0, padx=0, pady=3, sticky=tk.NW)
 
-                self.screenLinesFilterCheckbuttonFrame.grid(        column=0, row=4, padx=2, pady=2, sticky=tk.W, columnspan=3)
-                self.screenLinesFilterRandomCheckbutton.grid(       column=0, row=0, padx=0, pady=2, sticky=tk.W)
+                    self.screenLinesFilterLineDensityLabel.grid(        column=0, row=0, padx=2, pady=2, sticky=tk.W)
+                    self.screenLinesFilterLineDensitySpinbox.grid(      column=1, row=0, padx=2, pady=2, sticky=tk.W)
+                    self.screenLinesFilterLineDensityScale.grid(        column=2, row=0, padx=2, pady=2, sticky=tk.W)
+                    self.screenLinesFilterLineThicknessLabel.grid(      column=0, row=1, padx=2, pady=2, sticky=tk.W)
+                    self.screenLinesFilterLineThicknessSpinbox.grid(    column=1, row=1, padx=2, pady=2, sticky=tk.W)
+                    self.screenLinesFilterLineBlurLabel.grid(           column=0, row=2, padx=2, pady=2, sticky=tk.W)
+                    self.screenLinesFilterLineBlurSpinbox.grid(         column=1, row=2, padx=2, pady=2, sticky=tk.W)
+                    self.screenLinesFilterBlendmodeLabel.grid(          column=0, row=3, padx=2, pady=2, sticky=tk.W)
+                    self.screenLinesFilterBlendmodeOptionmenu.grid(     column=1, row=3, padx=0, pady=2, sticky=tk.W, columnspan=2)
 
-                self.screenLinesFilterColorFrame.grid(              column=0, row=5, padx=2, pady=2, columnspan=3, sticky=tk.N)
+                    self.screenLinesFilterCheckbuttonFrame.grid(        column=0, row=4, padx=2, pady=2, sticky=tk.W, columnspan=3)
+                    self.screenLinesFilterRandomCheckbutton.grid(       column=0, row=0, padx=0, pady=2, sticky=tk.W)
 
-                self.screenLinesFilterLineColorLabel.grid(          column=0, row=1, padx=2, pady=2, sticky=tk.W, columnspan=3)
-                self.screenLinesFilterLineColorRedLabel.grid(       column=0, row=2, padx=2, pady=2, sticky=tk.W)
-                self.screenLinesFilterLineColorRedSpinbox.grid(     column=1, row=2, padx=2, pady=2, sticky=tk.W)
-                self.screenLinesFilterLineColorRedScale.grid(       column=2, row=2, padx=2, pady=4, sticky=tk.W)
-                self.screenLinesFilterLineColorGreenLabel.grid(     column=0, row=3, padx=2, pady=2, sticky=tk.W)
-                self.screenLinesFilterLineColorGreenSpinbox.grid(   column=1, row=3, padx=2, pady=2, sticky=tk.W)
-                self.screenLinesFilterLineColorGreenScale.grid(     column=2, row=3, padx=2, pady=4, sticky=tk.W)
-                self.screenLinesFilterLineColorBlueLabel.grid(      column=0, row=4, padx=2, pady=4, sticky=tk.W)
-                self.screenLinesFilterLineColorBlueSpinbox.grid(    column=1, row=4, padx=2, pady=4, sticky=tk.W)
-                self.screenLinesFilterLineColorBlueScale.grid(      column=2, row=4, padx=2, pady=4, sticky=tk.W)
+                    self.screenLinesFilterColorFrame.grid(              column=0, row=5, padx=2, pady=2, columnspan=3, sticky=tk.N)
 
-            if selectedFilter == 'Burning Noise':
-                self.burnNoiseFilterFrame.grid(                column=0, row=0, padx=0, pady=3, sticky=tk.NW)
-        
-                self.burnNoiseFilterPixelSizeLabel.grid(            column=0, row=0, padx=2, pady=2, sticky=tk.W)
-                self.burnNoiseFilterPixelSizeSpinbox.grid(          column=1, row=0, padx=2, pady=2, sticky=tk.W)
-                self.burnNoiseFilterStretchWidthLabel.grid(         column=0, row=1, padx=2, pady=2, sticky=tk.W)
-                self.burnNoiseFilterStretchWidthSpinbox.grid(       column=1, row=1, padx=2, pady=2, sticky=tk.W)
-                self.burnNoiseFilterStretchWidthScale.grid(         column=2, row=1, padx=2, pady=2, sticky=tk.W)
-                self.burnNoiseFilterStretchHeightLabel.grid(        column=0, row=2, padx=2, pady=2, sticky=tk.W)
-                self.burnNoiseFilterStretchHeightSpinbox.grid(      column=1, row=2, padx=2, pady=2, sticky=tk.W)
-                self.burnNoiseFilterStretchHeightScale.grid(        column=2, row=2, padx=2, pady=2, sticky=tk.W)
+                    self.screenLinesFilterLineColorLabel.grid(          column=0, row=1, padx=2, pady=2, sticky=tk.W, columnspan=3)
+                    self.screenLinesFilterLineColorRedLabel.grid(       column=0, row=2, padx=2, pady=2, sticky=tk.W)
+                    self.screenLinesFilterLineColorRedSpinbox.grid(     column=1, row=2, padx=2, pady=2, sticky=tk.W)
+                    self.screenLinesFilterLineColorRedScale.grid(       column=2, row=2, padx=2, pady=4, sticky=tk.W)
+                    self.screenLinesFilterLineColorGreenLabel.grid(     column=0, row=3, padx=2, pady=2, sticky=tk.W)
+                    self.screenLinesFilterLineColorGreenSpinbox.grid(   column=1, row=3, padx=2, pady=2, sticky=tk.W)
+                    self.screenLinesFilterLineColorGreenScale.grid(     column=2, row=3, padx=2, pady=4, sticky=tk.W)
+                    self.screenLinesFilterLineColorBlueLabel.grid(      column=0, row=4, padx=2, pady=4, sticky=tk.W)
+                    self.screenLinesFilterLineColorBlueSpinbox.grid(    column=1, row=4, padx=2, pady=4, sticky=tk.W)
+                    self.screenLinesFilterLineColorBlueScale.grid(      column=2, row=4, padx=2, pady=4, sticky=tk.W)
 
-                self.burnNoiseFilterDarkBrightLabel.grid(           column=0, row=3, padx=2, pady=2, sticky=tk.W)
-                self.burnNoiseFilterDarkSpinbox.grid(               column=1, row=3, padx=2, pady=2, sticky=tk.W)
-                self.burnNoiseFilterBrightSpinbox.grid(             column=2, row=3, padx=2, pady=2, sticky=tk.W)
+                if selectedFilter == 'Burning Noise':
+                    self.burnNoiseFilterFrame.grid(                column=0, row=0, padx=0, pady=3, sticky=tk.NW)
 
-                self.burnNoiseFilterContrastLabel.grid(             column=0, row=4, padx=2, pady=2, sticky=tk.W)
-                self.burnNoiseFilterContrastSpinbox.grid(           column=1, row=4, padx=2, pady=2, sticky=tk.W)
-                self.burnNoiseFilterContrastScale.grid(             column=2, row=4, padx=2, pady=2, sticky=tk.W)
-                self.burnNoiseFilterIntensityLabel.grid(            column=0, row=5, padx=2, pady=2, sticky=tk.W)
-                self.burnNoiseFilterIntensitySpinbox.grid(          column=1, row=5, padx=2, pady=2, sticky=tk.W)
-                self.burnNoiseFilterIntensityScale.grid(            column=2, row=5, padx=2, pady=2, sticky=tk.W)
-                self.burnNoiseFilterBlurLabel.grid(                 column=0, row=6, padx=2, pady=2, sticky=tk.W)
-                self.burnNoiseFilterBlurSpinbox.grid(               column=1, row=6, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterPixelSizeLabel.grid(            column=0, row=0, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterPixelSizeSpinbox.grid(          column=1, row=0, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterStretchWidthLabel.grid(         column=0, row=1, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterStretchWidthSpinbox.grid(       column=1, row=1, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterStretchWidthScale.grid(         column=2, row=1, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterStretchHeightLabel.grid(        column=0, row=2, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterStretchHeightSpinbox.grid(      column=1, row=2, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterStretchHeightScale.grid(        column=2, row=2, padx=2, pady=2, sticky=tk.W)
 
-                self.burnNoiseFilterCheckbuttonFrame.grid(          column=0, row=7, padx=2, pady=2, sticky=tk.W, columnspan=3)
-                self.burnNoiseFilterInvertCheckbutton.grid(         column=0, row=0, padx=0, pady=0, sticky=tk.W)
-                self.burnNoiseFilterColorCheckbutton.grid(          column=1, row=0, padx=0, pady=0, sticky=tk.W)
+                    self.burnNoiseFilterDarkBrightLabel.grid(           column=0, row=3, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterDarkSpinbox.grid(               column=1, row=3, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterBrightSpinbox.grid(             column=2, row=3, padx=2, pady=2, sticky=tk.W)
 
-                self.burnNoiseFilterSeedLabel.grid(                 column=0, row=8, padx=2, pady=2, sticky=tk.W)
-                self.burnNoiseFilterSeedSpinbox.grid(               column=1, row=8, padx=2, pady=2, sticky=tk.W)
-                self.burnNoiseFilterRandomSeedButton.grid(          column=2, row=8, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterContrastLabel.grid(             column=0, row=4, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterContrastSpinbox.grid(           column=1, row=4, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterContrastScale.grid(             column=2, row=4, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterIntensityLabel.grid(            column=0, row=5, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterIntensitySpinbox.grid(          column=1, row=5, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterIntensityScale.grid(            column=2, row=5, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterBlurLabel.grid(                 column=0, row=6, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterBlurSpinbox.grid(               column=1, row=6, padx=2, pady=2, sticky=tk.W)
 
-            if selectedFilter == 'RGB Screen':
-                self.rgbScreenFilterCanvas.grid(                column=0, row=0, padx=0, pady=3, sticky='new')
+                    self.burnNoiseFilterCheckbuttonFrame.grid(          column=0, row=7, padx=2, pady=2, sticky=tk.W, columnspan=3)
+                    self.burnNoiseFilterInvertCheckbutton.grid(         column=0, row=0, padx=0, pady=0, sticky=tk.W)
+                    self.burnNoiseFilterColorCheckbutton.grid(          column=1, row=0, padx=0, pady=0, sticky=tk.W)
 
-                self.rgbScreenFilterPixelSizeLabel.grid(            column=0, row=0, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterPixelSizeSpinbox.grid(          column=1, row=0, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterPixelGapLabel.grid(             column=0, row=1, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterPixelGapSpinbox.grid(           column=1, row=1, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterIntensityLabel.grid(            column=0, row=2, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterIntensitySpinbox.grid(          column=1, row=2, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterIntensityScale.grid(            column=2, row=2, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterBlurLabel.grid(                 column=0, row=3, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterBlurSpinbox.grid(               column=1, row=3, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterSeedLabel.grid(                 column=0, row=8, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterSeedSpinbox.grid(               column=1, row=8, padx=2, pady=2, sticky=tk.W)
+                    self.burnNoiseFilterRandomSeedButton.grid(          column=2, row=8, padx=2, pady=2, sticky=tk.W)
 
-                self.rgbScreenFilterColorFrame.grid(                column=0, row=4, padx=0, pady=8, sticky=tk.W, columnspan=3)
+                if selectedFilter == 'RGB Screen':
+                    self.rgbScreenFilterCanvas.grid(                column=0, row=0, padx=0, pady=3, sticky='new')
 
-                self.rgbScreenFilterFirstColorLabel.grid(           column=0, row=0, padx=2, pady=2, sticky=tk.W, columnspan=3)
-                self.rgbScreenFilterFirstRedLabel.grid(             column=0, row=1, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterFirstRedSpinbox.grid(           column=1, row=1, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterFirstRedScale.grid(             column=2, row=1, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterFirstGreenLabel.grid(           column=0, row=2, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterFirstGreenSpinbox.grid(         column=1, row=2, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterFirstGreenScale.grid(           column=2, row=2, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterFirstBlueLabel.grid(            column=0, row=3, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterFirstBlueSpinbox.grid(          column=1, row=3, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterFirstBlueScale.grid(            column=2, row=3, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterPixelSizeLabel.grid(            column=0, row=0, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterPixelSizeSpinbox.grid(          column=1, row=0, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterPixelGapLabel.grid(             column=0, row=1, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterPixelGapSpinbox.grid(           column=1, row=1, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterIntensityLabel.grid(            column=0, row=2, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterIntensitySpinbox.grid(          column=1, row=2, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterIntensityScale.grid(            column=2, row=2, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterBlurLabel.grid(                 column=0, row=3, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterBlurSpinbox.grid(               column=1, row=3, padx=2, pady=2, sticky=tk.W)
 
-                self.rgbScreenFilterSecondColorLabel.grid(          column=0, row=4, padx=2, pady=2, sticky=tk.W, columnspan=3)
-                self.rgbScreenFilterSecondRedLabel.grid(            column=0, row=5, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterSecondRedSpinbox.grid(          column=1, row=5, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterSecondRedScale.grid(            column=2, row=5, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterSecondGreenLabel.grid(          column=0, row=6, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterSecondGreenSpinbox.grid(        column=1, row=6, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterSecondGreenScale.grid(          column=2, row=6, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterSecondBlueLabel.grid(           column=0, row=7, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterSecondBlueSpinbox.grid(         column=1, row=7, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterSecondBlueScale.grid(           column=2, row=7, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterColorFrame.grid(                column=0, row=4, padx=0, pady=8, sticky=tk.W, columnspan=3)
 
-                self.rgbScreenFilterThirdColorLabel.grid(           column=0, row=8, padx=2, pady=2, sticky=tk.W, columnspan=3)
-                self.rgbScreenFilterThirdRedLabel.grid(             column=0, row=9, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterThirdRedSpinbox.grid(           column=1, row=9, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterThirdRedScale.grid(             column=2, row=9, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterThirdGreenLabel.grid(           column=0, row=10, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterThirdGreenSpinbox.grid(         column=1, row=10, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterThirdGreenScale.grid(           column=2, row=10, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterThirdBlueLabel.grid(            column=0, row=11, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterThirdBlueSpinbox.grid(          column=1, row=11, padx=2, pady=2, sticky=tk.W)
-                self.rgbScreenFilterThirdBlueScale.grid(            column=2, row=11, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterFirstColorLabel.grid(           column=0, row=0, padx=2, pady=2, sticky=tk.W, columnspan=3)
+                    self.rgbScreenFilterFirstRedLabel.grid(             column=0, row=1, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterFirstRedSpinbox.grid(           column=1, row=1, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterFirstRedScale.grid(             column=2, row=1, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterFirstGreenLabel.grid(           column=0, row=2, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterFirstGreenSpinbox.grid(         column=1, row=2, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterFirstGreenScale.grid(           column=2, row=2, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterFirstBlueLabel.grid(            column=0, row=3, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterFirstBlueSpinbox.grid(          column=1, row=3, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterFirstBlueScale.grid(            column=2, row=3, padx=2, pady=2, sticky=tk.W)
 
-                self.update_idletasks()
+                    self.rgbScreenFilterSecondColorLabel.grid(          column=0, row=4, padx=2, pady=2, sticky=tk.W, columnspan=3)
+                    self.rgbScreenFilterSecondRedLabel.grid(            column=0, row=5, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterSecondRedSpinbox.grid(          column=1, row=5, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterSecondRedScale.grid(            column=2, row=5, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterSecondGreenLabel.grid(          column=0, row=6, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterSecondGreenSpinbox.grid(        column=1, row=6, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterSecondGreenScale.grid(          column=2, row=6, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterSecondBlueLabel.grid(           column=0, row=7, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterSecondBlueSpinbox.grid(         column=1, row=7, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterSecondBlueScale.grid(           column=2, row=7, padx=2, pady=2, sticky=tk.W)
 
-                self.rgbScreenFilterCanvas.config(height=self.configFilterFrame.winfo_height(),scrollregion=(0,0,self.configFilterFrame.winfo_width(), self.configFilterFrame.winfo_height()))
-                self.rgbScreenFilterScrollbar.grid(column=1, row=0, padx=1, sticky=tk.N+tk.S+tk.W)
+                    self.rgbScreenFilterThirdColorLabel.grid(           column=0, row=8, padx=2, pady=2, sticky=tk.W, columnspan=3)
+                    self.rgbScreenFilterThirdRedLabel.grid(             column=0, row=9, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterThirdRedSpinbox.grid(           column=1, row=9, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterThirdRedScale.grid(             column=2, row=9, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterThirdGreenLabel.grid(           column=0, row=10, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterThirdGreenSpinbox.grid(         column=1, row=10, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterThirdGreenScale.grid(           column=2, row=10, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterThirdBlueLabel.grid(            column=0, row=11, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterThirdBlueSpinbox.grid(          column=1, row=11, padx=2, pady=2, sticky=tk.W)
+                    self.rgbScreenFilterThirdBlueScale.grid(            column=2, row=11, padx=2, pady=2, sticky=tk.W)
 
-    def browse_file(self):
+                    self.update_idletasks()
+
+                    self.rgbScreenFilterCanvas.config(height=self.configFilterFrame.winfo_height(),scrollregion=(0,0,self.configFilterFrame.winfo_width(), self.configFilterFrame.winfo_height()))
+                    self.rgbScreenFilterScrollbar.grid(column=1, row=0, padx=1, sticky=tk.N+tk.S+tk.W)
+            except:
+                glitchLogger.exception('Filter Options failed to update!')
+                showerror('Error', 'Filter Options failed to update!')
+
+    def browse_file(self, event=None):
         tempSourceImagePath = ''
-        tempSourceImagePath = filedialog.askopenfilename(filetypes=(('JPEG','*.jpg *.jpeg'), ('PNG','*.png')))
+        tempSourceImagePath = filedialog.askopenfilename(initialdir='/', title='Open Image...', defaultextension=self.sourceImageExtension, **self.FILEOPTIONS)
 
         if tempSourceImagePath:
-            self.sourceImagePath = tempSourceImagePath
-            self.sourceImage = Image.open(self.sourceImagePath)
-            self.sourceImage.load()
-            self.firstImageLoaded = True
-            self.sourceImage = self.sourceImage.convert('RGB')
-            self.tempImage = copy.deepcopy(self.sourceImage)
+            try:
+                filename, self.sourceImageExtension = os.path.splitext(tempSourceImagePath)
+                del filename
+                self.sourceImagePath = tempSourceImagePath
+                self.sourceImage = Image.open(self.sourceImagePath)
+            except:
+                glitchLogger.exception('Loading Image failed! - Filepath: ', tempSourceImagePath)
+                showerror('Error', 'Loading Image failed! - Filepath:\n{}'.format(tempSourceImagePath))
+                self.sourceImagePath = ''
+            else:
+                self.sourceImage.load()
+                self.firstImageLoaded = True
+                self.sourceImage = self.sourceImage.convert('RGB')
+                self.tempImage = copy.deepcopy(self.sourceImage)
 
-            #Create and Load Thumbnail
-            self.update_preview()
+                #Create and Load Thumbnail
+                self.update_preview()
 
-            #Set Parameters
-            self.update_parameters()
+                #Set Parameters
+                self.update_parameters()
 
     def update_parameters(self):
-        #RGB Offset Filter
-        self.rgbOffsetFilterRedXscale.config(to_=self.tempImage.width)
-        self.rgbOffsetFilterBlueXscale.config(to_=self.tempImage.width)
-        self.rgbOffsetFilterGreenXscale.config(to_=self.tempImage.width)
-        self.rgbOffsetFilterRedYscale.config(to_=self.tempImage.height)
-        self.rgbOffsetFilterBlueYscale.config(to_=self.tempImage.height)
-        self.rgbOffsetFilterGreenYscale.config(to_=self.tempImage.height)
+        try:
+            #RGB Offset Filter
+            self.rgbOffsetFilterRedXscale.config(to_=self.tempImage.width)
+            self.rgbOffsetFilterBlueXscale.config(to_=self.tempImage.width)
+            self.rgbOffsetFilterGreenXscale.config(to_=self.tempImage.width)
+            self.rgbOffsetFilterRedYscale.config(to_=self.tempImage.height)
+            self.rgbOffsetFilterBlueYscale.config(to_=self.tempImage.height)
+            self.rgbOffsetFilterGreenYscale.config(to_=self.tempImage.height)
 
-        self.rgbOffsetFilterRedXscale.config(from_=-self.tempImage.width)
-        self.rgbOffsetFilterBlueXscale.config(from_=-self.tempImage.width)
-        self.rgbOffsetFilterGreenXscale.config(from_=-self.tempImage.width)
-        self.rgbOffsetFilterRedYscale.config(from_=-self.tempImage.height)
-        self.rgbOffsetFilterBlueYscale.config(from_=-self.tempImage.height)
-        self.rgbOffsetFilterGreenYscale.config(from_=-self.tempImage.height)
+            self.rgbOffsetFilterRedXscale.config(from_=-self.tempImage.width)
+            self.rgbOffsetFilterBlueXscale.config(from_=-self.tempImage.width)
+            self.rgbOffsetFilterGreenXscale.config(from_=-self.tempImage.width)
+            self.rgbOffsetFilterRedYscale.config(from_=-self.tempImage.height)
+            self.rgbOffsetFilterBlueYscale.config(from_=-self.tempImage.height)
+            self.rgbOffsetFilterGreenYscale.config(from_=-self.tempImage.height)
 
-        #Big Blocks Filter
-        self.bigBlocksFilterBlockMaxHeight.set(((self.tempImage.height)/100)*(100/self.bigBlocksFilterBlockCountVar.get()))
-        self.bigBlocksFilterBlockMaxHeightSpinbox.config(to_=(self.bigBlocksFilterBlockMaxHeight.get()))
+            #Big Blocks Filter
+            self.bigBlocksFilterBlockMaxHeight.set(((self.tempImage.height)/100)*(100/self.bigBlocksFilterBlockCountVar.get()))
+            self.bigBlocksFilterBlockMaxHeightSpinbox.config(to_=(self.bigBlocksFilterBlockMaxHeight.get()))
 
-        #Small Blocks Filter
-        self.smallBlocksFilterMaxHeightSpinbox.config(to_=self.tempImage.height)
-        self.smallBlocksFilterMaxWidthSpinbox.config(to_=self.tempImage.width)
-        if self.smallBlocksFilterMaxHeight.get() <= self.smallBlocksFilterMinHeight.get():
-            self.smallBlocksFilterMinHeight.set(self.smallBlocksFilterMaxHeight.get()-1)
-        if self.smallBlocksFilterMaxWidth.get() <= self.smallBlocksFilterMinWidth.get():
-            self.smallBlocksFilterMinWidth.set(self.smallBlocksFilterMaxWidth.get()-1)
+            #Small Blocks Filter
+            self.smallBlocksFilterMaxHeightSpinbox.config(to_=self.tempImage.height)
+            self.smallBlocksFilterMaxWidthSpinbox.config(to_=self.tempImage.width)
+            if self.smallBlocksFilterMaxHeight.get() <= self.smallBlocksFilterMinHeight.get():
+                self.smallBlocksFilterMinHeight.set(self.smallBlocksFilterMaxHeight.get()-1)
+            if self.smallBlocksFilterMaxWidth.get() <= self.smallBlocksFilterMinWidth.get():
+                self.smallBlocksFilterMinWidth.set(self.smallBlocksFilterMaxWidth.get()-1)
 
-        #Burning Noise Filter
-        if self.burnNoiseFilterDark.get() >= self.burnNoiseFilterBright.get():
-            self.burnNoiseFilterDark.set(self.burnNoiseFilterBright.get()-1)
+            #Burning Noise Filter
+            if self.burnNoiseFilterDark.get() >= self.burnNoiseFilterBright.get():
+                self.burnNoiseFilterDark.set(self.burnNoiseFilterBright.get()-1)
 
-        #Screen Lines Filter
-        self.screenLinesFilterLineThicknessSpinbox.config(to_=self.sourceImage.height/2)
+            #Screen Lines Filter
+            self.screenLinesFilterLineThicknessSpinbox.config(to_=self.sourceImage.height/2)
+        except:
+            glitchLogger.exception('Updating parameters failed!')
+            showerror('Error', 'Updating parameters failed!')
 
     def update_labels(self, *args):
         if self.setupFinished:
-            #RGB Screen Filter
-            color = '#%02x%02x%02x' % (self.rgbScreenFilterFirstRed.get(), self.rgbScreenFilterFirstGreen.get(), self.rgbScreenFilterFirstBlue.get())
-            self.rgbScreenFilterFirstColorLabel.configure(bg=color)
-            if ((self.rgbScreenFilterFirstRed.get() + self.rgbScreenFilterFirstGreen.get() + self.rgbScreenFilterFirstBlue.get())/3) > 127:
-                self.rgbScreenFilterFirstColorLabel.configure(fg='black')
-            else:
-                self.rgbScreenFilterFirstColorLabel.configure(fg='white')
-        
-            color = '#%02x%02x%02x' % (self.rgbScreenFilterSecondRed.get(), self.rgbScreenFilterSecondGreen.get(), self.rgbScreenFilterSecondBlue.get())
-            self.rgbScreenFilterSecondColorLabel.configure(bg=color)
-            if ((self.rgbScreenFilterSecondRed.get() + self.rgbScreenFilterSecondGreen.get() + self.rgbScreenFilterSecondBlue.get())/3) > 127:
-                self.rgbScreenFilterSecondColorLabel.configure(fg='black')
-            else:
-                self.rgbScreenFilterSecondColorLabel.configure(fg='white')
-        
-            color = '#%02x%02x%02x' % (self.rgbScreenFilterThirdRed.get(), self.rgbScreenFilterThirdGreen.get(), self.rgbScreenFilterThirdBlue.get())
-            self.rgbScreenFilterThirdColorLabel.configure(bg=color)
-            if ((self.rgbScreenFilterThirdRed.get() + self.rgbScreenFilterThirdGreen.get() + self.rgbScreenFilterThirdBlue.get())/3) > 127:
-                self.rgbScreenFilterThirdColorLabel.configure(fg='black')
-            else:
-                self.rgbScreenFilterThirdColorLabel.configure(fg='white')
+            try:
+                #RGB Screen Filter
+                color = '#%02x%02x%02x' % (self.rgbScreenFilterFirstRed.get(), self.rgbScreenFilterFirstGreen.get(), self.rgbScreenFilterFirstBlue.get())
+                self.rgbScreenFilterFirstColorLabel.configure(bg=color)
+                if ((self.rgbScreenFilterFirstRed.get() + self.rgbScreenFilterFirstGreen.get() + self.rgbScreenFilterFirstBlue.get())/3) > 127:
+                    self.rgbScreenFilterFirstColorLabel.configure(fg='black')
+                else:
+                    self.rgbScreenFilterFirstColorLabel.configure(fg='white')
 
-            color = '#%02x%02x%02x' % (self.screenLinesFilterLineColorRed.get(), self.screenLinesFilterLineColorGreen.get(), self.screenLinesFilterLineColorBlue.get())
-            self.screenLinesFilterLineColorLabel.configure(bg=color)
-            if ((self.screenLinesFilterLineColorRed.get() + self.screenLinesFilterLineColorGreen.get() + self.screenLinesFilterLineColorBlue.get())/3) > 127:
-                self.screenLinesFilterLineColorLabel.configure(fg='black')
-            else:
-                self.screenLinesFilterLineColorLabel.configure(fg='white')
+                color = '#%02x%02x%02x' % (self.rgbScreenFilterSecondRed.get(), self.rgbScreenFilterSecondGreen.get(), self.rgbScreenFilterSecondBlue.get())
+                self.rgbScreenFilterSecondColorLabel.configure(bg=color)
+                if ((self.rgbScreenFilterSecondRed.get() + self.rgbScreenFilterSecondGreen.get() + self.rgbScreenFilterSecondBlue.get())/3) > 127:
+                    self.rgbScreenFilterSecondColorLabel.configure(fg='black')
+                else:
+                    self.rgbScreenFilterSecondColorLabel.configure(fg='white')
 
-    def save_image(self):
+                color = '#%02x%02x%02x' % (self.rgbScreenFilterThirdRed.get(), self.rgbScreenFilterThirdGreen.get(), self.rgbScreenFilterThirdBlue.get())
+                self.rgbScreenFilterThirdColorLabel.configure(bg=color)
+                if ((self.rgbScreenFilterThirdRed.get() + self.rgbScreenFilterThirdGreen.get() + self.rgbScreenFilterThirdBlue.get())/3) > 127:
+                    self.rgbScreenFilterThirdColorLabel.configure(fg='black')
+                else:
+                    self.rgbScreenFilterThirdColorLabel.configure(fg='white')
+
+                color = '#%02x%02x%02x' % (self.screenLinesFilterLineColorRed.get(), self.screenLinesFilterLineColorGreen.get(), self.screenLinesFilterLineColorBlue.get())
+                self.screenLinesFilterLineColorLabel.configure(bg=color)
+                if ((self.screenLinesFilterLineColorRed.get() + self.screenLinesFilterLineColorGreen.get() + self.screenLinesFilterLineColorBlue.get())/3) > 127:
+                    self.screenLinesFilterLineColorLabel.configure(fg='black')
+                else:
+                    self.screenLinesFilterLineColorLabel.configure(fg='white')
+            except:
+                glitchLogger.exception('Update of labels failed!')
+
+    def save_image(self, event=None):
         if self.firstImageLoaded:
-            filename, extension = os.path.splitext(self.sourceImagePath)
-            self.tempImage.save('{}{}{}'.format(filename, '-GlitchFilter', extension))
-            self.isImageSaved = True
+            try:
+                filename, extension = os.path.splitext(self.sourceImagePath)
+                self.tempImage.save('{}{}{}'.format(filename, '-GlitchFilter', extension))
+                self.isImageSaved = True
+            except:
+                glitchLogger.exception('Saveing Image failed!')
+                showerror('Error', 'Saveing Image failed! - Filepath:\n{}{}{}'.format(filename, '-GlitchFilter', extension))
 
-    def save_image_as(self):
+    def save_image_as(self, event=None):
         tempFilePath = ''
         if self.firstImageLoaded:
-            fileTypes = [   ("all files","*.*"), 
-                            ('JPEG','*.jpg *.jpeg'), 
-                            ('PNG','*.png')]
-            tempFilePath = filedialog.asksaveasfilename(initialdir='/', title='Save file...', filetypes=fileTypes, defaultextension="*.*")
-        if tempFilePath:
-            self.tempImage.save(tempFilePath)
-            self.isImageSaved = True
+            filepath, extension = os.path.splitext(self.sourceImagePath)
+            print(self.sourceImageExtension)
+            tempFilePath = filedialog.asksaveasfilename(initialdir=filepath, title='Save Image...', defaultextension=self.sourceImageExtension, **self.FILEOPTIONS)
+        try:
+            if tempFilePath:
+                self.tempImage.save(tempFilePath)
+                self.isImageSaved = True
+        except:
+            glitchLogger.exception('Saveing Image failed!')
+            showerror('Error', 'Saveing Image failed! - Filepath:\n{}'.format(tempFilePath))
 
     def create_thumbnail(self, image):
-        tempThumbImage = copy.deepcopy(image)
-        tempThumbImage.load()
+        try:
+            tempThumbImage = copy.deepcopy(image)
+            tempThumbImage.load()
 
-        thumbnailWidth  = tempThumbImage.width
-        thumbnailHeight = tempThumbImage.height
-        scaleX = self.imageCanvas.winfo_width()  / thumbnailWidth
-        scaleY = self.imageCanvas.winfo_height() / thumbnailHeight
+            thumbnailWidth  = tempThumbImage.width
+            thumbnailHeight = tempThumbImage.height
+            scaleX = self.imageCanvas.winfo_width()  / thumbnailWidth
+            scaleY = self.imageCanvas.winfo_height() / thumbnailHeight
 
-        if(scaleX <= scaleY):                                    
-            thumbnailWidth  = int(thumbnailWidth  * scaleX)  
-            thumbnailHeight = int(thumbnailHeight * scaleX)    
+            if(scaleX <= scaleY):                                    
+                thumbnailWidth  = int(thumbnailWidth  * scaleX)  
+                thumbnailHeight = int(thumbnailHeight * scaleX)    
 
-        if(scaleX > scaleY):                                    
-            thumbnailWidth  = int(thumbnailWidth  * scaleY)    
-            thumbnailHeight = int(thumbnailHeight * scaleY)
+            if(scaleX > scaleY):                                    
+                thumbnailWidth  = int(thumbnailWidth  * scaleY)    
+                thumbnailHeight = int(thumbnailHeight * scaleY)
 
-        tempThumbImage = tempThumbImage.resize((int(thumbnailWidth), int(thumbnailHeight)), Image.LANCZOS)
-        self.thumbImage = ImageTk.PhotoImage(tempThumbImage)
-        canvasPosX = int((self.imageCanvas.winfo_width()  - self.thumbImage.width() + 2)/2)
-        canvasPosY = int((self.imageCanvas.winfo_height() - self.thumbImage.height() + 2)/2)
+            tempThumbImage = tempThumbImage.resize((int(thumbnailWidth), int(thumbnailHeight)), Image.LANCZOS)
+            self.thumbImage = ImageTk.PhotoImage(tempThumbImage)
+            canvasPosX = int((self.imageCanvas.winfo_width()  - self.thumbImage.width() + 2)/2)
+            canvasPosY = int((self.imageCanvas.winfo_height() - self.thumbImage.height() + 2)/2)
 
-        self.imageCanvas.delete('all')
-        self.imageCanvas.config(bg=bgColor)
-        self.imageCanvas.create_image(canvasPosX, canvasPosY, image=self.thumbImage, anchor=tk.N+tk.W)
+            self.imageCanvas.delete('all')
+            self.imageCanvas.config(bg=bgColor)
+            self.imageCanvas.create_image(canvasPosX, canvasPosY, image=self.thumbImage, anchor=tk.N+tk.W)
+        except:
+            glitchLogger.exception('Creation of thumbnail failed!')
+            showerror('Creation of thumbnail failed!')
 
     def refresh_filter(self):
-        #RGB Offset
-        if self.rgbOffsetFilterActiveState.get():
-            for child in self.rgbOffsetFilterCanvas.winfo_children():
-                try:
-                    child.configure(state='normal')
-                except:
-                    pass
-            for child in self.rgbOffsetFilterBottomFrame.winfo_children():
-                try:
-                    child.configure(state='normal')
-                except:
-                    pass
-        else:
-            for child in self.rgbOffsetFilterCanvas.winfo_children():
-                try:
-                    child.configure(state='disable')
-                except:
-                    pass
-            for child in self.rgbOffsetFilterBottomFrame.winfo_children():
-                try:
-                    child.configure(state='disable')
-                except:
-                    pass
+        try:
+            #RGB Offset
+            if self.rgbOffsetFilterActiveState.get():
+                for child in self.rgbOffsetFilterCanvas.winfo_children():
+                    try:
+                        child.configure(state='normal')
+                    except:
+                        pass
+                for child in self.rgbOffsetFilterBottomFrame.winfo_children():
+                    try:
+                        child.configure(state='normal')
+                    except:
+                        pass
+            else:
+                for child in self.rgbOffsetFilterCanvas.winfo_children():
+                    try:
+                        child.configure(state='disable')
+                    except:
+                        pass
+                for child in self.rgbOffsetFilterBottomFrame.winfo_children():
+                    try:
+                        child.configure(state='disable')
+                    except:
+                        pass
 
-        #Big Blocks Offset
-        if self.bigBlocksFilterActiveState.get():
-            for child in self.bigBlocksFilterFrame.winfo_children():
-                child.configure(state='normal')
-        else:
-            for child in self.bigBlocksFilterFrame.winfo_children():
-                child.configure(state='disable')
+            #Big Blocks Offset
+            if self.bigBlocksFilterActiveState.get():
+                for child in self.bigBlocksFilterFrame.winfo_children():
+                    child.configure(state='normal')
+            else:
+                for child in self.bigBlocksFilterFrame.winfo_children():
+                    child.configure(state='disable')
 
-        #Small Blocks Offset
-        if self.smallBlocksFilterActiveState.get():
-            for child in self.smallBlocksFilterFrame.winfo_children():
-                child.configure(state='normal')
-        else:
-            for child in self.smallBlocksFilterFrame.winfo_children():
-                child.configure(state='disable')
+            #Small Blocks Offset
+            if self.smallBlocksFilterActiveState.get():
+                for child in self.smallBlocksFilterFrame.winfo_children():
+                    child.configure(state='normal')
+            else:
+                for child in self.smallBlocksFilterFrame.winfo_children():
+                    child.configure(state='disable')
 
-        #Screen Lines
-        if self.screenLinesFilterActiveState.get():
-            for child in self.screenLinesFilterFrame.winfo_children():
-                try:
+            #Screen Lines
+            if self.screenLinesFilterActiveState.get():
+                for child in self.screenLinesFilterFrame.winfo_children():
+                    try:
+                        child.configure(state='normal')
+                    except:
+                        pass
+                for child in self.screenLinesFilterCheckbuttonFrame.winfo_children():
                     child.configure(state='normal')
-                except:
-                    pass
-            for child in self.screenLinesFilterCheckbuttonFrame.winfo_children():
-                child.configure(state='normal')
-            for child in self.screenLinesFilterColorFrame.winfo_children():
-                child.configure(state='normal')
-        else:
-            for child in self.screenLinesFilterFrame.winfo_children():
-                try:
+                for child in self.screenLinesFilterColorFrame.winfo_children():
+                    child.configure(state='normal')
+            else:
+                for child in self.screenLinesFilterFrame.winfo_children():
+                    try:
+                        child.configure(state='disable')
+                    except:
+                        pass
+                for child in self.screenLinesFilterCheckbuttonFrame.winfo_children():
                     child.configure(state='disable')
-                except:
-                    pass
-            for child in self.screenLinesFilterCheckbuttonFrame.winfo_children():
-                child.configure(state='disable')
-            for child in self.screenLinesFilterColorFrame.winfo_children():
-                child.configure(state='disable')
+                for child in self.screenLinesFilterColorFrame.winfo_children():
+                    child.configure(state='disable')
 
-        #Burning Noise
-        if self.burnNoiseFilterActiveState.get():
-            for child in self.burnNoiseFilterFrame.winfo_children():
-                try:
+            #Burning Noise
+            if self.burnNoiseFilterActiveState.get():
+                for child in self.burnNoiseFilterFrame.winfo_children():
+                    try:
+                        child.configure(state='normal')
+                    except:
+                        pass
+                for child in self.burnNoiseFilterCheckbuttonFrame.winfo_children():
                     child.configure(state='normal')
-                except:
-                    pass
-            for child in self.burnNoiseFilterCheckbuttonFrame.winfo_children():
-                child.configure(state='normal')
-        else:
-            for child in self.burnNoiseFilterFrame.winfo_children():
-                try:
+            else:
+                for child in self.burnNoiseFilterFrame.winfo_children():
+                    try:
+                        child.configure(state='disable')
+                    except:
+                        pass
+                for child in self.burnNoiseFilterCheckbuttonFrame.winfo_children():
                     child.configure(state='disable')
-                except:
-                    pass
-            for child in self.burnNoiseFilterCheckbuttonFrame.winfo_children():
-                child.configure(state='disable')
-                
-        #RGB Screen
-        if self.rgbScreenFilterActiveState.get():
-            for child in self.rgbScreenFilterFrame.winfo_children():
-                try:
-                    child.configure(state='normal')
-                except:
-                    pass
-            for child in self.rgbScreenFilterColorFrame.winfo_children():
-                try:
-                    child.configure(state='normal')
-                except:
-                    pass
-        else:
-            for child in self.rgbScreenFilterFrame.winfo_children():
-                try:
-                    child.configure(state='disable')
-                except:
-                    pass
-            for child in self.rgbScreenFilterColorFrame.winfo_children():
-                try:
-                    child.configure(state='disable')
-                except:
-                    pass
+
+            #RGB Screen
+            if self.rgbScreenFilterActiveState.get():
+                for child in self.rgbScreenFilterFrame.winfo_children():
+                    try:
+                        child.configure(state='normal')
+                    except:
+                        pass
+                for child in self.rgbScreenFilterColorFrame.winfo_children():
+                    try:
+                        child.configure(state='normal')
+                    except:
+                        pass
+            else:
+                for child in self.rgbScreenFilterFrame.winfo_children():
+                    try:
+                        child.configure(state='disable')
+                    except:
+                        pass
+                for child in self.rgbScreenFilterColorFrame.winfo_children():
+                    try:
+                        child.configure(state='disable')
+                    except:
+                        pass
+        except:
+            glitchLogger.exception('Refresh of filter failed!')
+            showerror('Refresh of filter failed!')
 
     def update_preview(self):
         if self.firstImageLoaded == True:
