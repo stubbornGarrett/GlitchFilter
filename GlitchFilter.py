@@ -724,7 +724,7 @@ class Application(tk.Frame):
         tempSourceImagePath = ''
         tempSourceImagePath = filedialog.askopenfilename(initialdir='/', title='Open Image...', defaultextension=self.sourceImageExtension, **self.FILEOPTIONS)
 
-        if tempSourceImagePath:
+        if tempSourceImagePath and self.continue_without_save():
             try:
                 filename, self.sourceImageExtension = os.path.splitext(tempSourceImagePath)
                 del filename
@@ -1344,9 +1344,6 @@ class Application(tk.Frame):
                     randXleft  = width - randomWidth
                     randXright = width
 
-                print('Left: ',randXleft)
-                print('Right: ',randXright)
-
                 crop = (randXleft, randYtop, randXright, randYbottom)
 
                 #Cut chunk with predefined values
@@ -1394,7 +1391,7 @@ class Application(tk.Frame):
             print('Barrel Filter: finished')
 
     def testFilter(self):
-        z=1
+        z=0
         #if self.nameFilterActiveState.get():
         if z:
             print('Test Filter: started')
