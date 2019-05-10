@@ -1,0 +1,3 @@
+Glitch Filter v0.0 - "Known Bugs List"
+######################################
+- Memory Error in 32bit Python with bigger pictures
