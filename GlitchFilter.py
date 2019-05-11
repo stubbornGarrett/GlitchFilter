@@ -88,9 +88,10 @@ class Application(tk.Frame):
         self.maxThreads = 400   #At this point not important (was used for experimental multithreading with unknown amount of threads)
 
         #Open Window Variables - keeps track if toplevel windows are open
-        self.filterListOpen = False
-        self.presetListOpen = False
-        self.aboutWindowOpen = False
+        self.imagePreviewOpen   = False
+        self.filterListOpen     = False
+        self.presetListOpen     = False
+        self.aboutWindowOpen    = False
 
         #Create parameters for the Filters and insert default Values
         try:
@@ -324,7 +325,8 @@ class Application(tk.Frame):
         self.filterListListbox.bind('<<ListboxSelect>>', self.switch_filter_options)
 
         self.filterListButton                       = tk.Button(        self.topConfigFrame, text='Active Filter List', command=self.open_filterList_window, height=1, width=15)
-        self.presetListButton                       = tk.Button(        self.topConfigFrame, text='Presets', command=self.open_presetList_window, height=1, width=15)#, font=('Helvetica', '16'))
+        self.presetListButton                       = tk.Button(        self.topConfigFrame, text='Presets', state='disable', command=self.open_presetList_window, height=1, width=15)#, font=('Helvetica', '16'))
+        self.presetListButtonTooltip                = CreateToolTip(    self.presetListButton, 'Not implemented yet')
 
         #Overview Bottom
         self.previewButton                          = tk.Button(        self.bottomConfigFrame, text='Preview full sized Image', command=self.preview_fullsized_image, width=28)
@@ -452,13 +454,13 @@ class Application(tk.Frame):
         self.burnNoiseFilterRedXtooltip             = CreateToolTip(    self.burnNoiseFilterRandomSeedButton, 'Generate random Seed between 0 and 99999')
 
         #RGB Screen Filter
-        self.rgbScreenFilterScrollbar               = tk.Scrollbar(     self.configFilterFrame, orient=tk.VERTICAL)
-        self.rgbScreenFilterCanvas                  = tk.Canvas(        self.configFilterFrame, yscrollcommand=self.rgbScreenFilterScrollbar.set, highlightthickness=0)
-        self.rgbScreenFilterScrollbar.config(command=self.rgbScreenFilterCanvas.yview)
-        self.rgbScreenFilterCanvas.bind_all("<MouseWheel>", lambda event: self.rgbScreenFilterCanvas.yview_scroll(int(-1*(event.delta/120)), "units"))
+        #self.rgbScreenFilterScrollbar               = tk.Scrollbar(     self.configFilterFrame, orient=tk.VERTICAL)
+        #self.rgbScreenFilterCanvas                  = tk.Canvas(        self.configFilterFrame, yscrollcommand=self.rgbScreenFilterScrollbar.set, highlightthickness=0)
+        #self.rgbScreenFilterScrollbar.config(command=self.rgbScreenFilterCanvas.yview)
+        #self.rgbScreenFilterCanvas.bind_all("<MouseWheel>", lambda event: self.rgbScreenFilterCanvas.yview_scroll(int(-1*(event.delta/120)), "units"))
 
-        self.rgbScreenFilterFrame                   = tk.Frame(         self.rgbScreenFilterCanvas)
-        self.rgbScreenFilterCanvas.create_window(0,0, window=self.rgbScreenFilterFrame, anchor=tk.NW)
+        self.rgbScreenFilterFrame                   = tk.Frame(         self.configFilterFrame)
+        #self.rgbScreenFilterCanvas.create_window(0,0, window=self.rgbScreenFilterFrame, anchor=tk.NW)
 
         self.rgbScreenFilterPixelSizeLabel          = tk.Label(         self.rgbScreenFilterFrame, text='Pixel Size (px)', anchor=tk.W, relief=tk.GROOVE)
         self.rgbScreenFilterPixelSizeSpinbox        = tk.Spinbox(       self.rgbScreenFilterFrame, from_=3, to_=255, width=5, textvariable=self.rgbScreenFilterPixelSize, justify=tk.RIGHT, selectbackground=fouColor)
@@ -665,7 +667,8 @@ class Application(tk.Frame):
                     self.burnNoiseFilterRandomSeedButton.grid(          column=2, row=8, padx=2, pady=2, sticky=tk.W)
 
                 if selectedFilter == 'RGB Screen':
-                    self.rgbScreenFilterCanvas.grid(                column=0, row=0, padx=0, pady=3, sticky='new')
+                    #self.rgbScreenFilterCanvas.grid(                column=0, row=0, padx=0, pady=3, sticky='new')
+                    self.rgbScreenFilterFrame.grid(                     column=0, row=0, padx=0, pady=3, sticky='new')
 
                     self.rgbScreenFilterPixelSizeLabel.grid(            column=0, row=0, padx=2, pady=2, sticky=tk.W)
                     self.rgbScreenFilterPixelSizeSpinbox.grid(          column=1, row=0, padx=2, pady=2, sticky=tk.W)
@@ -712,10 +715,10 @@ class Application(tk.Frame):
                     self.rgbScreenFilterThirdBlueSpinbox.grid(          column=1, row=11, padx=2, pady=2, sticky=tk.W)
                     self.rgbScreenFilterThirdBlueScale.grid(            column=2, row=11, padx=2, pady=2, sticky=tk.W)
 
-                    self.update_idletasks()
+                    #self.update_idletasks()
 
-                    self.rgbScreenFilterCanvas.config(height=self.configFilterFrame.winfo_height(),scrollregion=(0,0,self.configFilterFrame.winfo_width(), self.configFilterFrame.winfo_height()))
-                    self.rgbScreenFilterScrollbar.grid(column=1, row=0, padx=1, sticky=tk.N+tk.S+tk.W)
+                    #self.rgbScreenFilterCanvas.config(height=self.configFilterFrame.winfo_height(),scrollregion=(0,0,self.configFilterFrame.winfo_width(), self.configFilterFrame.winfo_height()))
+                    #self.rgbScreenFilterScrollbar.grid(column=1, row=0, padx=1, sticky=tk.N+tk.S+tk.W)
             except:
                 glitchLogger.exception('Filter Options failed to update!')
                 showerror('Error', 'Filter Options failed to update!')
@@ -871,7 +874,7 @@ class Application(tk.Frame):
             self.imageCanvas.create_image(canvasPosX, canvasPosY, image=self.thumbImage, anchor=tk.N+tk.W)
         except:
             glitchLogger.exception('Creation of thumbnail failed!')
-            showerror('Creation of thumbnail failed!')
+            showerror('Error', 'Creation of thumbnail failed!')
 
     def refresh_filter(self):
         try:
@@ -983,11 +986,11 @@ class Application(tk.Frame):
             showerror('Refresh of filter failed!')
 
     def update_preview(self):
-        if self.firstImageLoaded == True:
+        if self.firstImageLoaded:
             if self.previewActiveVar.get():
-                self.create_thumbnail(self.tempImage)
+                self.create_thumbnail(self.tempImage)   #Displays altered Image
             else:
-                self.create_thumbnail(self.sourceImage)
+                self.create_thumbnail(self.sourceImage) #Displays source Image
 
     def apply_changes(self):
         self.filterThread = threading.Thread(target=self.apply_filters)     #Creates thread for the application of the filters
@@ -1041,7 +1044,11 @@ class Application(tk.Frame):
         self.apply_changes()
 
     def preview_fullsized_image(self):
-        self.tempImage.show()
+        try:
+            self.tempImage.show()
+        except:
+            glitchLogger.exception('Image preview failed!')
+            showerror('Error', 'Image preview failed!\n(Your System must provide an image viewer)')
 
     def continue_without_save(self):
         if self.isImageSaved:
@@ -1298,21 +1305,10 @@ class Application(tk.Frame):
             for x in range(0,rows+1):
                 draw.line((0, x*pixelWidth, width, x*pixelWidth), fill='black', width=pixelGap)
 
-            blackGrid = Image.new('RGB', size, color='white')
-            draw = ImageDraw.Draw(blackGrid)
-
-            for x in range(0,columns+1):
-                draw.line((x*pixelWidth,0,x*pixelWidth, height-1), fill='black',width=pixelGap)
-            for x in range(0,rows+1):
-                draw.line((0, x*pixelWidth, width, x*pixelWidth), fill='black', width=pixelGap)
-
             intensity = float(self.rgbScreenFilterIntensity.get()/100)
-            #intensity = 255-intensity
 
             tempCopySimage = copy.deepcopy(sImage)
             maskImage = ImageChops.multiply(tempCopySimage, maskImage)
-            #maskImage = ImageChops.multiply(maskImage, tempCopySimage)
-            maskImage = ImageChops.multiply(blackGrid, maskImage)
             maskImage = maskImage.filter(ImageFilter.GaussianBlur(self.rgbScreenFilterBlur.get()))
             sImage = ImageChops.blend(sImage, maskImage, intensity)
 
@@ -1383,7 +1379,7 @@ class Application(tk.Frame):
             width, height = sImage.size
             size = width, height
             
-            #Implement Algorithm
+            #Implement Algorithm - not implemented yet
 
             self.tempImage = copy.deepcopy(sImage)
 
@@ -1522,21 +1518,25 @@ class presetListWindow(tk.Toplevel):
         self.withdraw()
 
 class aboutWindow(tk.Toplevel):
-    def __init__(self, master=None):
-        tk.Frame.__init__(self, master)
-
-        #Main Window parameters
-        self.master.resizable(False, False)
-        self.master.tk_setPalette(background='#696969')
-        self.master.geometry('400x200+30+30')
-        self.master.title('About Glitch Filter')
+    def __init__(self, master):
+        tk.Toplevel.__init__(self, master)
+        self.master = master
+        self.resizable(False, False)
+        self.transient(master)
+        self.geometry('+250+250')
+        self.title('About Glitch Filter')
         try:
             self.master.iconbitmap('GlitchFilterIcon.ico')
         except:
             glitchLogger.warning("Icon couldn't be loaded - about window")
         self.protocol('WM_DELETE_WINDOW', self.destroyWindow)
         
-    #INSERT CONTENT HERE
+        text = ' Glitch Filter\n by stubbornGarrett\n\n Built:\t5th May 2019 \n Version:\t1.0\n Python:\t3.7 '
+
+        self.textFrame = tk.Frame(self)
+        self.textLabel = tk.Label(self.textFrame, text=text, justify=tk.LEFT, bg='#aa00aa', fg='cyan', font=('Tahoma', 11, 'bold'))
+        self.textFrame.pack()
+        self.textLabel.pack()#padx=10, pady=10)
     
     def destroyWindow(self):
         self.master.aboutWindowOpen = False
