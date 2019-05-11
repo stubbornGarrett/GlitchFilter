@@ -1545,7 +1545,7 @@ class aboutWindow(tk.Toplevel):
             glitchLogger.warning("Icon couldn't be loaded - about window")
         self.protocol('WM_DELETE_WINDOW', self.destroyWindow)
         
-        text = ' Glitch Filter\n by stubbornGarrett\n\n Built:\t5th May 2019 \n Version:\t1.0\n Python:\t3.7 '
+        text = ' Glitch Filter\n by stubbornGarrett\n\n Built:\t11th May 2019 \n Version:\t1.0\n Python:\t3.7 '
 
         self.textFrame = tk.Frame(self)
         self.textLabel = tk.Label(self.textFrame, text=text, justify=tk.LEFT, bg='#aa00aa', fg='cyan', font=('Tahoma', 11, 'bold'))
