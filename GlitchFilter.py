@@ -19,7 +19,7 @@ import threading
 glitchLogger = logging.getLogger(__name__)
 glitchLogger.setLevel(logging.DEBUG)
 
-glitchFileHandler = RotatingFileHandler('GlitchFilterLog.log', maxBytes=2000000, backupCount=2)
+glitchFileHandler = RotatingFileHandler('GlitchFilterLog.log', maxBytes=100000)
 glitchFileHandler.setLevel(logging.INFO)
 
 glitchLogger.addHandler(glitchFileHandler)
@@ -995,6 +995,11 @@ class Application(tk.Frame):
     def apply_changes(self):
         self.filterThread = threading.Thread(target=self.apply_filters)     #Creates thread for the application of the filters
         self.filterThread.daemon = True                                     # -> progressbar wouldn't update without more configuration
+        for child in self.bottomConfigFrame.winfo_children():
+            try:
+                child.configure(state='disable')
+            except:
+                pass                                    
         self.imageProgressbar.start()
         self.filterThread.start()
         self.update_idletasks()
@@ -1008,6 +1013,11 @@ class Application(tk.Frame):
         self.update_preview()
         self.imageProgressbar.stop()
         print('Elapsed Time: ', '{:1.2f}'.format(time.time()-startTime))
+        for child in self.bottomConfigFrame.winfo_children():
+            try:
+                child.configure(state='normal')
+            except:
+                pass   
 
     def rand_values(self):
         if(self.rgbOffsetFilterBetterCheckButtonState.get()):
@@ -1180,31 +1190,35 @@ class Application(tk.Frame):
             maskImage   = maskImage.convert('RGBA')
             sImage      = sImage.convert('RGBA')
 
-            maskImage   = np.array(maskImage)   #Convert Pillow Image to numpy array,
-            sImage      = np.array(sImage)      # for usage in blend_modes module
-            maskImage   = maskImage.astype(float)
-            sImage      = sImage.astype(float)
+            try:
+                maskImage   = np.array(maskImage)   #Convert Pillow Image to numpy array,
+                sImage      = np.array(sImage)      # for usage in blend_modes module
+                maskImage   = maskImage.astype(float)
+                sImage      = sImage.astype(float)
 
-            if self.screenLinesFilterBlendmode.get() == 'Soft Light':
-                sImage = blend_modes.soft_light(sImage, maskImage, 1.0)
+                if self.screenLinesFilterBlendmode.get() == 'Soft Light':
+                    sImage = blend_modes.soft_light(sImage, maskImage, 1.0)
 
-            if self.screenLinesFilterBlendmode.get() == 'Lighten Only':
-                sImage = blend_modes.lighten_only(sImage, maskImage, 1.0)
+                if self.screenLinesFilterBlendmode.get() == 'Lighten Only':
+                    sImage = blend_modes.lighten_only(sImage, maskImage, 1.0)
 
-            if self.screenLinesFilterBlendmode.get() == 'Addition':
-                sImage = blend_modes.addition(sImage, maskImage, 1.0)
+                if self.screenLinesFilterBlendmode.get() == 'Addition':
+                    sImage = blend_modes.addition(sImage, maskImage, 1.0)
 
-            if self.screenLinesFilterBlendmode.get() == 'Darken Only':
-                sImage = blend_modes.darken_only(sImage, maskImage, 1.0)
+                if self.screenLinesFilterBlendmode.get() == 'Darken Only':
+                    sImage = blend_modes.darken_only(sImage, maskImage, 1.0)
 
-            if self.screenLinesFilterBlendmode.get() == 'Subtract':
-                sImage = blend_modes.subtract(sImage, maskImage, 1.0)
+                if self.screenLinesFilterBlendmode.get() == 'Subtract':
+                    sImage = blend_modes.subtract(sImage, maskImage, 1.0)
 
-            if self.screenLinesFilterBlendmode.get() == 'Grain Merge':
-                sImage = blend_modes.grain_merge(sImage, maskImage, 1.0)
-                
-            if self.screenLinesFilterBlendmode.get() == 'Divide':
-                sImage = blend_modes.divide(sImage, maskImage, 1.0)
+                if self.screenLinesFilterBlendmode.get() == 'Grain Merge':
+                    sImage = blend_modes.grain_merge(sImage, maskImage, 1.0)
+
+                if self.screenLinesFilterBlendmode.get() == 'Divide':
+                    sImage = blend_modes.divide(sImage, maskImage, 1.0)
+            except MemoryError:
+                glitchLogger.exception('Memory Error with ScreenFilter!')
+                showerror('Memory Error', 'Ran out of Memory!\n\nSolutions:\n - Use 64bit Python\n - Use smaller Images\n - Deactivate "Screen Lines"')
 
             sImage = np.uint8(sImage)
             sImage = Image.fromarray(sImage)
