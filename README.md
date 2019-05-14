@@ -1,7 +1,7 @@
 # What GlitchFilter does
 It takes an image and applys a single or multiple filters to it.
 
-![Before/After Image](https://dl.dropboxusercontent.com/s/khge749hqps81qk/preview.png "Before / After")
+![Before/After Image](https://dl.dropboxusercontent.com/s/8x5gmtmtt9j9w81/preview-1-0-0.png?dl=0 "Before / After")
 Image by Gathen9 [aka Fabio Marinacci](https://deviantart.com/gathen9)
 
 # How it works
