@@ -1,5 +1,8 @@
 # What GlitchFilter does
-It takes an image and applys multiple filters to it.
+It takes an image and applys a single or multiple filters to it.
+
+![Before/After Image](https://dl.dropboxusercontent.com/s/khge749hqps81qk/preview.png "Before / After")
+Image by Gathen9 [aka Fabio Marinacci](https://deviantart.com/gathen9)
 
 # How it works
 1. Load an image *"File -> Open Image"* or *"Ctrl + O"*
