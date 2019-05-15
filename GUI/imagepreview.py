@@ -27,14 +27,14 @@ class Imagepreview(ttk.Frame):
             scaleY = self.previewCanvas.winfo_height() / image.height
 
             if(image.width >= image.height):
-                if(self.previewCanvas.winfo_width() >= self.previewCanvas.winfo_height()):
+                if int(image.width * scaleY) < self.previewCanvas.winfo_width():
                     self.previewImage = ImageTk.PhotoImage(image.resize((int(image.width * scaleY), self.previewCanvas.winfo_height()), resample=Image.LANCZOS))
                 else:
-                    self.previewImage = ImageTk.PhotoImage(image.resize((self.previewCanvas.winfo_width(), int(image.height * scaleX)), resample=Image.LANCZOS))
+                    self.previewImage = ImageTk.PhotoImage(image.resize((self.previewCanvas.winfo_width(), int(image.height*scaleX)), resample=Image.LANCZOS))
             else:
-                if(self.previewCanvas.winfo_width() >= self.previewCanvas.winfo_height()):
+                if int(image.width * scaleY) < self.previewCanvas.winfo_width():
                     self.previewImage = ImageTk.PhotoImage(image.resize((int(image.width * scaleY), self.previewCanvas.winfo_height()), resample=Image.LANCZOS))
                 else:
-                    self.previewImage = ImageTk.PhotoImage(image.resize((self.previewCanvas.winfo_width(), int(image.height * scaleX)), resample=Image.LANCZOS))
+                    self.previewImage = ImageTk.PhotoImage(image.resize((self.previewCanvas.winfo_width(), int(image.height*scaleX)), resample=Image.LANCZOS))
 
             self.previewCanvas.create_image(int((self.previewCanvas.winfo_width()-self.previewImage.width())/2), int((self.previewCanvas.winfo_height()-self.previewImage.height())/2), anchor=tk.NW, image=self.previewImage)
