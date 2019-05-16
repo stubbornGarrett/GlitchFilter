@@ -6,7 +6,6 @@ class Imagepreview(ttk.Frame):
     def __init__(self, master=None):
         ttk.Frame.__init__(self, master)
         self.sizeMultiplicator = 1.0
-        #self.bind('<MouseWheel>', func=self.update_size_multiplicator)
         self.bind('<Configure>', func=self.adjust_canvas_size)
 
         self.init_widgets()
@@ -21,10 +20,16 @@ class Imagepreview(ttk.Frame):
         self.display_image(self.master.tempImage)
 
     def update_size_multiplicator(self, event):
-        if self.sizeMultiplicator <= 1 and (self.sizeMultiplicator + event.delta/2160) > 0.05:
-            self.sizeMultiplicator += event.delta/2160
-        if self.sizeMultiplicator >= 1 and (self.sizeMultiplicator + event.delta/720) < 3:
-            self.sizeMultiplicator += event.delta/720
+        if self.sizeMultiplicator >= 0.05 and event.delta < 0:
+            if self.sizeMultiplicator >= 1:
+                self.sizeMultiplicator -= 0.1
+            else:
+                self.sizeMultiplicator -= 0.05
+        elif self.sizeMultiplicator <= 3 and event.delta > 0:
+            if self.sizeMultiplicator >= 1:
+                self.sizeMultiplicator += 0.1
+            else:
+                self.sizeMultiplicator += 0.05
         print(self.sizeMultiplicator)
         self.adjust_canvas_size(event=None)
 
