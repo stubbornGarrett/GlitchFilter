@@ -4,8 +4,8 @@ import tkinter.ttk as ttk
 class Configbar(ttk.Frame):
     def __init__(self, master=None):
         ttk.Frame.__init__(self, master, width=400)
-        self.grid(column=1, row=0, sticky='ns')
-        tk.Grid.rowconfigure(self, 0, weight=1)
+        #self.grid(column=1, row=0, sticky='ns')
+        #tk.Grid.rowconfigure(self, 0, weight=1)
 
         self.init_widgets()
 

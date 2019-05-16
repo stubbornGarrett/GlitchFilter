@@ -24,20 +24,25 @@ class GlitchFilter(ttk.Frame):
         self.firstImageLoaded = False
 
         self.FILEOPTIONS =  dict(   filetypes=[\
-                                    ('JPEG','*.jpg *.jpeg'), 
+                                    ('JPEG','*.jpg *.jpeg'),
                                     ('PNG','*.png'),
                                     ("all files","*.*")])
 
         self.init_gui(self)
         
-        self.master.bind('<Enter>', func=self.imagepreviewWidget.resize_previewCanvas)
+        self.master.bind('<Enter>', func=self.imagepreviewWidget.adjust_canvas_size)
 
     def init_gui(self, parent):
         tk.Grid.columnconfigure(parent, 0, weight=1)
         tk.Grid.rowconfigure(parent, 0, weight=1)
         self.menubarWidget = Menubar(parent.master, parent)
         self.imagepreviewWidget = Imagepreview(parent)
+        self.imagepreviewWidget.grid(               column=0, row=0, sticky='news')
+        self.imagepreviewWidget.columnconfigure(    0, weight=1)
+        self.imagepreviewWidget.rowconfigure(       0, weight=1)
         self.configbarWidget = Configbar(parent)
+        self.configbarWidget.grid(                  column=1, row=0, sticky='ns')
+        self.configbarWidget.rowconfigure(          0, weight=1)
 
     def quit_application(self):
         self.quit()

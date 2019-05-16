@@ -54,6 +54,7 @@ class Menubar(tk.Menu):
                 self.parent.sourceImagePath = ''
             else:
                 self.parent.firstImageLoaded = True
+                self.parent.imagepreviewWidget.sizeMultiplicator = 1.0
                 self.parent.imagepreviewWidget.display_image(self.parent.tempImage)
                 #self.sourceImage.load()
                 #self.firstImageLoaded = True
