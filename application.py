@@ -1,8 +1,8 @@
+from tools import logger, globals
 from GUI.menubar import Menubar
 #from GUI.toolbar
 from GUI.imagepreview import Imagepreview
 from GUI.configbar import Configbar
-from tools import logger
 from PIL import Image, ImageTk
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -15,34 +15,29 @@ class GlitchFilter(ttk.Frame):
         self.master.title('Glitch Filter')
         self.master.protocol('WM_DELETE_WINDOW', self.quit_application)
         self.grid(column=0, row=0, sticky=tk.N+tk.E+tk.S+tk.W)
+        try:
+            self.master.iconbitmap('GlitchFilterIcon.ico')
+        except:
+            logger.log.warning("Icon couldn't be loaded - main window")
 
-        self.sourceImage            = Image.new('RGB', (1,1), 'pink')
-        self.sourceImagePath        = ''
-        self.sourceImageExtension   = '.png'
-        self.tempImage              = copy.copy(self.sourceImage)
+        self.init_gui()
 
-        self.firstImageLoaded = False
+    def init_gui(self):
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
+        self.menubar = Menubar(self.master, self)
+        self.panedMainWindow    = ttk.PanedWindow(self, orient=tk.HORIZONTAL)
+        self.panedMainWindow.grid(column=0, row=0, sticky=tk.N+tk.E+tk.S+tk.W)
+        self.panedMainWindow.rowconfigure(0, weight=1)
 
-        self.FILEOPTIONS =  dict(   filetypes=[\
-                                    ('JPEG','*.jpg *.jpeg'),
-                                    ('PNG','*.png'),
-                                    ("all files","*.*")])
+        self.imagepreviewWidget = Imagepreview(self.panedMainWindow)
+        self.configbarWidget    = Configbar(self.panedMainWindow)
 
-        self.init_gui(self)
-        
-        self.master.bind('<Enter>', func=self.imagepreviewWidget.adjust_canvas_size)
+        self.panedMainWindow.add(self.imagepreviewWidget, weight=20)
+        self.panedMainWindow.add(self.configbarWidget, weight=1)
 
-    def init_gui(self, parent):
-        tk.Grid.columnconfigure(parent, 0, weight=1)
-        tk.Grid.rowconfigure(parent, 0, weight=1)
-        self.menubarWidget = Menubar(parent.master, parent)
-        self.imagepreviewWidget = Imagepreview(parent)
-        self.imagepreviewWidget.grid(               column=0, row=0, sticky='news')
-        self.imagepreviewWidget.columnconfigure(    0, weight=1)
-        self.imagepreviewWidget.rowconfigure(       0, weight=1)
-        self.configbarWidget = Configbar(parent)
-        self.configbarWidget.grid(                  column=1, row=0, sticky='ns')
-        self.configbarWidget.rowconfigure(          0, weight=1)
+        #self.panedMainWindow.rowconfigure(0, weight=1)
+        self.master.bind('<Enter>', lambda event: self.imagepreviewWidget.adjust_canvas_size(event, image=globals.sourceImageThumbnail))
 
     def quit_application(self):
         self.quit()

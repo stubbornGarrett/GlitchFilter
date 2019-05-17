@@ -1,3 +1,4 @@
+from tools import logger, globals
 import tkinter as tk
 import os
 import copy
@@ -28,7 +29,7 @@ class Menubar(tk.Menu):
         self.fileMenu.add_separator()
         self.fileMenu.add_command(label='Exit', command=parent.quit_application)
        
-        #bind_all('<Control-o>', self.browse_file)
+        self.bind_all('<Control-o>', self.open_image)
         #bind_all('<Control-s>', self.save_image)
         #bind_all('<Control-Alt-s>', self.save_image_as)
 
@@ -36,27 +37,40 @@ class Menubar(tk.Menu):
         self.add_cascade(label='Help', menu=self.helpMenu)
         self.helpMenu.add_command(label='About')#, command=open_about_window)
 
-    def open_image(self):
+    def open_image(self, event=None):
         tempSourceImagePath = ''
-        tempSourceImagePath = askopenfilename(initialdir='/', title='Open Image...', defaultextension=self.parent.sourceImageExtension, **self.parent.FILEOPTIONS)
+        tempSourceImagePath = askopenfilename(initialdir='/', title='Open Image...', defaultextension=globals.sourceImageExtension, **globals.FILEOPTIONS)
 
         if tempSourceImagePath: # and self.continue_without_save():
             try:
-                filename, self.parent.sourceImageExtension = os.path.splitext(tempSourceImagePath)
+                filename, globals.sourceImageExtension = os.path.splitext(tempSourceImagePath)
                 del filename
-                self.parent.sourceImagePath = tempSourceImagePath
-                self.parent.sourceImage = Image.open(self.parent.sourceImagePath)
-                self.parent.sourceImage.load()
-                self.parent.tempImage = copy.copy(self.parent.sourceImage)
+                globals.sourceImagePath = tempSourceImagePath
+                globals.sourceImage = Image.open(globals.sourceImagePath)
+                globals.sourceImage.load()
+                globals.tempImage = copy.copy(globals.sourceImage)
+                globals.sourceImageThumbnail = self.create_thumbnail(globals.sourceImage)
             except:
                 logger.log.exception('Loading Image failed! - Filepath: ', tempSourceImagePath)
                 #showerror('Error', 'Loading Image failed! - Filepath:\n{}'.format(tempSourceImagePath))
-                self.parent.sourceImagePath = ''
+                globals.sourceImagePath = ''
             else:
-                self.parent.firstImageLoaded = True
-                self.parent.imagepreviewWidget.sizeMultiplicator = 1.0
-                self.parent.imagepreviewWidget.display_image(self.parent.tempImage)
+                globals.firstImageLoaded = True
+                globals.sizeMultiplicator = 1.0
+                self.parent.imagepreviewWidget.display_image(globals.sourceImageThumbnail)
+                
                 #self.sourceImage.load()
                 #self.firstImageLoaded = True
                 #self.sourceImage = self.sourceImage.convert('RGB')
                 #self.tempImage = copy.deepcopy(self.sourceImage)
+
+    def create_thumbnail(self, image):
+        if image.width > self.parent.imagepreviewWidget.previewCanvas.winfo_width() or image.height > self.parent.imagepreviewWidget.previewCanvas.winfo_height():
+            if image.height > self.master.winfo_screenheight():
+                scale = self.master.winfo_screenheight() / image.height
+                image = image.resize((int(image.width * scale), int(image.height * scale)), resample=Image.LANCZOS)
+            if image.width > self.master.winfo_screenwidth():
+                scale = self.master.winfo_screenwidth() / image.width
+                image = image.resize((int(image.width * scale), int(image.height * scale)), resample=Image.LANCZOS)
+        
+        return image
