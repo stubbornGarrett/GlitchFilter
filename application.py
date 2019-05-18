@@ -1,4 +1,4 @@
-from tools import logger, globals
+from tools import logger
 from GUI.menubar import Menubar
 #from GUI.toolbar
 from GUI.imagepreview import Imagepreview
@@ -20,6 +20,27 @@ class GlitchFilter(ttk.Frame):
         except:
             logger.log.warning("Icon couldn't be loaded - main window")
 
+        self.sourceImage             = Image.new('RGB', (1,1), 'pink')
+        self.sourceImagePath         = ''
+        self.sourceImageExtension    = '.png'
+        self.sourceImageThumbnail    = copy.copy(self.sourceImage)
+        self.tempImageThumbnail      = copy.copy(self.sourceImage)
+        self.tempImage               = copy.copy(self.sourceImage)
+
+        self.firstImageLoaded        = False
+        
+        self.previewActiveVar        = tk.IntVar()
+        self.previewActiveVar.set(1)
+        self.highResActiveVar        = tk.IntVar()
+        self.highResActiveVar.set(0)
+
+        self.FILEOPTIONS =  dict(   filetypes=[\
+                                ('JPEG','*.jpg *.jpeg'),
+                                ('PNG','*.png'),
+                                ("all files","*.*")])
+
+        self.sizeMultiplicator = 1.0
+
         self.init_gui()
 
     def init_gui(self):
@@ -36,9 +57,6 @@ class GlitchFilter(ttk.Frame):
         self.panedMainWindow.add(self.imagepreviewWidget, weight=20)
         self.panedMainWindow.add(self.configbarWidget, weight=1)
 
-        #self.panedMainWindow.rowconfigure(0, weight=1)
-        self.master.bind('<Enter>', lambda event: self.imagepreviewWidget.adjust_canvas_size(event, image=globals.sourceImageThumbnail))
-
     def quit_application(self):
         self.quit()
 
@@ -51,7 +69,7 @@ def main():
         root.update()
         root.minsize(root.winfo_width(), root.winfo_height())
         root.state('zoomed')
-        root.update_idletasks
+        #root.update_idletasks
     except Exception:
         logger.log.exception('Initalisation of window failed!')
     else:

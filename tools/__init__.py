@@ -1,1 +1,1 @@
-__all__ = ['logger', 'global']
+__all__ = ['logger']

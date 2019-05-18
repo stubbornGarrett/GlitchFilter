@@ -1,4 +1,4 @@
-from tools import logger, globals
+from tools import logger
 import tkinter as tk
 import os
 import copy
@@ -21,7 +21,7 @@ class Menubar(tk.Menu):
         self.fileMenu = tk.Menu(self, tearoff=0)
         self.helpMenu = tk.Menu(self, tearoff=0)
 
-        #File
+        #File Menu
         self.add_cascade(label='File', menu=self.fileMenu)
         self.fileMenu.add_command(label='Open Image', accelerator='Ctrl+O', command=self.open_image)
         self.fileMenu.add_command(label='Save')#, accelerator='Ctrl+S', command=self.save_image)
@@ -33,31 +33,32 @@ class Menubar(tk.Menu):
         #bind_all('<Control-s>', self.save_image)
         #bind_all('<Control-Alt-s>', self.save_image_as)
 
-        #Help
+        #Help Menu
         self.add_cascade(label='Help', menu=self.helpMenu)
         self.helpMenu.add_command(label='About')#, command=open_about_window)
 
     def open_image(self, event=None):
         tempSourceImagePath = ''
-        tempSourceImagePath = askopenfilename(initialdir='/', title='Open Image...', defaultextension=globals.sourceImageExtension, **globals.FILEOPTIONS)
+        tempSourceImagePath = askopenfilename(initialdir='/', title='Open Image...', defaultextension=self.parent.sourceImageExtension, **self.parent.FILEOPTIONS)
 
         if tempSourceImagePath: # and self.continue_without_save():
             try:
-                filename, globals.sourceImageExtension = os.path.splitext(tempSourceImagePath)
+                filename, self.parent.sourceImageExtension = os.path.splitext(tempSourceImagePath)
                 del filename
-                globals.sourceImagePath = tempSourceImagePath
-                globals.sourceImage = Image.open(globals.sourceImagePath)
-                globals.sourceImage.load()
-                globals.tempImage = copy.copy(globals.sourceImage)
-                globals.sourceImageThumbnail = self.create_thumbnail(globals.sourceImage)
+                self.parent.sourceImagePath = tempSourceImagePath
+                self.parent.sourceImage     = Image.open(self.parent.sourceImagePath)
+                self.parent.sourceImage.load()
+                self.parent.tempImage       = copy.copy(self.parent.sourceImage)
+                self.parent.sourceImageThumbnail    = self.create_thumbnail(self.parent.sourceImage)
+                self.parent.tempImageThumbnail      = copy.copy(self.parent.sourceImageThumbnail)
             except:
                 logger.log.exception('Loading Image failed! - Filepath: ', tempSourceImagePath)
                 #showerror('Error', 'Loading Image failed! - Filepath:\n{}'.format(tempSourceImagePath))
-                globals.sourceImagePath = ''
+                self.parent.sourceImagePath = ''
             else:
-                globals.firstImageLoaded = True
-                globals.sizeMultiplicator = 1.0
-                self.parent.imagepreviewWidget.display_image(globals.sourceImageThumbnail)
+                self.parent.firstImageLoaded = True
+                self.parent.sizeMultiplicator = 1.0
+                self.parent.imagepreviewWidget.adjust_canvas_size(event=None)
                 
                 #self.sourceImage.load()
                 #self.firstImageLoaded = True
@@ -72,5 +73,5 @@ class Menubar(tk.Menu):
             if image.width > self.master.winfo_screenwidth():
                 scale = self.master.winfo_screenwidth() / image.width
                 image = image.resize((int(image.width * scale), int(image.height * scale)), resample=Image.LANCZOS)
-        
+        print('Created thumbnail!')
         return image

@@ -1,4 +1,4 @@
-from tools import logger, globals
+from tools import logger
 import tkinter as tk
 import tkinter.ttk as ttk
 #from filter import rgboffset
