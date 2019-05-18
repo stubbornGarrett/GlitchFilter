@@ -63,7 +63,7 @@ class GlitchFilter(ttk.Frame):
         self.panedMainWindow.add(self.configbarWidget, weight=1)
 
     def set_binds(self):
-        self.bind('Ctrl+A', self.configbarWidget.apply_filter)
+        self.master.bind('<Control-a>', self.configbarWidget.apply_filter)
 
     def quit_application(self):
         self.quit()
