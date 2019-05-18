@@ -64,6 +64,8 @@ class GlitchFilter(ttk.Frame):
 
     def set_binds(self):
         self.master.bind('<Control-a>', self.configbarWidget.apply_filter)
+        self.master.bind('<Control-r>', self.configbarWidget.apply_filter_random)
+        self.master.bind('<Control-f>', self.configbarWidget.preview_image)
 
     def quit_application(self):
         self.quit()
