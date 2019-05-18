@@ -10,14 +10,24 @@ class GlitchStyle(ttk.Style):
         self.thirdColor         = '#00aaaa' #Highlights (e.g. hovering a button)
         self.disableColor       = '#555555'
         self.disableFont        = '#999999'
+
+        self.defaultFont        = ("Calibri", 12)
+
         self.theme_create('GlitchTheme', settings={
             '.':                {'configure': { 'background'    : self.firstColor,
                                                 'foreground'    : self.secondColor,
                                                 'highlightcolor': self.thirdColor,
-                                                'font'          : ("Calibri", 12),
+                                                'font'          : self.defaultFont,
                                                 'relief'        : 'flat'}},
 
-            'TLabel':           {'configure': { 'font'          : ("Calibri", 12),
+            'TFrame':           {'configure': { 'relief'        : tk.FLAT,
+                                                'padding'       : 10}},
+
+            'TNotebook':        {'configure': { 'padding'       : 2}},
+            
+            'TNotebook.Tab':    {'configure': { 'padding'       : 2}},
+
+            'TLabel':           {'configure': { 'font'          : self.defaultFont,
                                                 'padding'       : 3,
                                                 'borderwidth'   : 1,
                                                 'relief'        : 'groove'},
@@ -25,9 +35,14 @@ class GlitchStyle(ttk.Style):
                                                 'foreground'    : [('disabled', self.disableFont)]}},
 
             'TCheckbutton':     {'configure': { 'background'    : self.firstColor,
-                                                'foreground'    : self.secondColor}},
+                                                'foreground'    : self.secondColor,
+                                                #'indicatorcolor': self.secondColor,
+                                                'padding'       : 5},
+                                'map'       : { 'foreground'    : [('disabled', self.disableFont)],
+                                                'activeforeground': [('active', self.thirdColor)],
+                                                'indicatorcolor': [('selected', self.thirdColor)]}},
 
-            'TButton':          {'configure': { 'font'          : ("Calibri", 12),
+            'TButton':          {'configure': { 'font'          : self.defaultFont,
                                                 'padding'       : 2,
                                                 'borderwidth'   : 3,
                                                 'justify'       : tk.CENTER,
@@ -38,10 +53,15 @@ class GlitchStyle(ttk.Style):
                                                 'foreground'    : [('disabled', self.disableFont)]}},
 
             'TEntry':           {'configure': { 'foreground'    : self.firstColor,
-                                                'padding'       : 3,
-                                                'font'          : ("Calibri", 12)}},
+                                                'selectbackground': self.thirdColor,
+                                                'padding'       : 1,
+                                                'borderwidth'   : 3,
+                                                'padding'       : 0,}},
 
-            'TSeparator':   {'configure': { 'padding'       : 30}}
+            'TScrollbar':       {'configure': { 'background'    : self.secondColor},
+                                'map'       : { 'arrowcolor'    : [('active', self.thirdColor)]}},
+
+            'TSeparator':       {'configure': { 'padding'       : 30}}
         })
 
         self.theme_use('GlitchTheme')

@@ -40,17 +40,17 @@ class RGBoffsetFilter():
         self.topFrame       = Frame(self.mainFrame)
 
         self.RedXlabel      = Label(self.topFrame, text='Red X')
-        self.RedXentry      = Entry(self.topFrame, textvariable=self.RedXvar,   justify='right', width=6)
+        self.RedXentry      = Entry(self.topFrame, textvariable=self.RedXvar,   justify='right', width=6, font=self.master.master.master.GlitchStyle.defaultFont)
         self.GreenXlabel    = Label(self.topFrame, text='Green X')
-        self.GreenXentry    = Entry(self.topFrame, textvariable=self.GreenXvar, justify='right', width=6)
+        self.GreenXentry    = Entry(self.topFrame, textvariable=self.GreenXvar, justify='right', width=6, font=self.master.master.master.GlitchStyle.defaultFont)
         self.BlueXlabel     = Label(self.topFrame, text='Blue X')
-        self.BlueXentry     = Entry(self.topFrame, textvariable=self.BlueXvar,  justify='right', width=6)
+        self.BlueXentry     = Entry(self.topFrame, textvariable=self.BlueXvar,  justify='right', width=6, font=self.master.master.master.GlitchStyle.defaultFont)
         self.RedYlabel      = Label(self.topFrame, text='Red Y')
-        self.RedYentry      = Entry(self.topFrame, textvariable=self.RedYvar,   justify='right', width=6)
+        self.RedYentry      = Entry(self.topFrame, textvariable=self.RedYvar,   justify='right', width=6, font=self.master.master.master.GlitchStyle.defaultFont)
         self.GreenYlabel    = Label(self.topFrame, text='Green Y')
-        self.GreenYentry    = Entry(self.topFrame, textvariable=self.GreenYvar, justify='right', width=6)
+        self.GreenYentry    = Entry(self.topFrame, textvariable=self.GreenYvar, justify='right', width=6, font=self.master.master.master.GlitchStyle.defaultFont)
         self.BlueYlabel     = Label(self.topFrame, text='Blue Y')
-        self.BlueYentry     = Entry(self.topFrame, textvariable=self.BlueYvar,  justify='right', width=6)
+        self.BlueYentry     = Entry(self.topFrame, textvariable=self.BlueYvar,  justify='right', width=6, font=self.master.master.master.GlitchStyle.defaultFont)
 
         self.frameSeperator = Separator(self.mainFrame)
        
@@ -95,8 +95,6 @@ class RGBoffsetFilter():
             self.GreenYvar.set( randint(-valueY, valueY))
             self.BlueXvar.set(  randint(-valueX, valueX))
             self.BlueYvar.set(  randint(-valueY, valueY))
-
-            print(self.RedXvar)
         
         else:
             width  = self.master.master.master.sourceImage.width

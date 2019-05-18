@@ -7,11 +7,12 @@ from copy import copy
 class Configbar(ttk.Frame):
     def __init__(self, master=None):
         ttk.Frame.__init__(self, master)#, width=400)
-        self.rowconfigure(1, pad=10)
-        self.rowconfigure(2, weight=1)
-        self.rowconfigure(3, pad=10)
-        self.rowconfigure(4, pad=10)
+        #self.rowconfigure(1, pad=10)
+        #self.rowconfigure(2, weight=1)
+        #self.rowconfigure(3, pad=10)
+        #self.rowconfigure(4, pad=10)
         self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
 
         self.inProgress = False
 
@@ -19,25 +20,56 @@ class Configbar(ttk.Frame):
         self.init_widgets()
 
     def init_widgets(self):
-        self.topConfigFrame     = ttk.Frame(self)
+        self.configbarNotebook = ttk.Notebook(self)
+        self.configbarNotebook.grid(column=0, row=0, sticky='news')
+
+        #Confgig Tab ****************************************************************************
+        self.configTab          = ttk.Frame(self.configbarNotebook)
+        
+        self.configTab.rowconfigure(1, pad=10)
+        self.configTab.rowconfigure(2, weight=1)
+        self.configTab.rowconfigure(3, pad=10)
+        self.configTab.rowconfigure(4, pad=10)
+        self.configTab.columnconfigure(0, weight=1)
+
+        #Filter List
+        self.topConfigFrame     = ttk.Frame(self.configTab)
         self.topConfigFrame.grid(       column=0, row=0, sticky=tk.W+tk.E)
         self.topConfigFrame.columnconfigure( 0, weight=1)
-        self.topCanvas          = tk.Canvas(self.topConfigFrame, bg='green', height=100)
-        self.topCanvas.grid(column=0, row=0, sticky=tk.N+tk.E+tk.S+tk.W)
+        self.filterListScrollbar= ttk.Scrollbar(self.topConfigFrame, orient=tk.VERTICAL)
+        self.filterListScrollbar.grid(  column=1, row=0, sticky=tk.N+tk.S, pady=2)
+        self.filterListbox      = tk.Listbox(self.topConfigFrame, activestyle='underline', selectbackground=self.master.master.GlitchStyle.thirdColor, font=self.master.master.GlitchStyle.defaultFont, listvariable=self.master.master.filterListVar, height=4, yscrollcommand=self.filterListScrollbar)
+        self.filterListbox.grid(        column=0, row=0, sticky=tk.W+tk.E, padx=3, pady=2)
+        self.filterListScrollbar['command'] = self.filterListbox.yview
 
-        self.firstSeperator     = ttk.Separator(self)
+        self.firstSeperator     = ttk.Separator(self.configTab)
         self.firstSeperator.grid(       column=0, row=1, sticky=tk.W+tk.E)
 
-        self.filterConfigFrame  = ttk.Frame(self)
-        self.filterConfigFrame.grid(    column=0, row=2, sticky=tk.W+tk.E+tk.N+tk.S)
+        #Filter Config
+        self.filterConfigFrame  = ttk.Frame(self.configTab)
+        self.filterConfigFrame.grid(    column=0, row=2, sticky=tk.W+tk.E+tk.N+tk.S, padx=5)
         self.filterConfigFrame.columnconfigure( 0, weight=1)
         self.filterConfigFrame.rowconfigure(    0, weight=1)
 
-        self.secondSeperator    = ttk.Separator(self)
+        self.secondSeperator    = ttk.Separator(self.configTab)
         self.secondSeperator.grid(      column=0, row=3, sticky=tk.W+tk.E)
 
+        self.rgboffsetFilter = rgboffset.RGBoffsetFilter(self.filterConfigFrame, self)
+        self.filterListObj.append(self.rgboffsetFilter)
+        self.rgboffsetFilter.display_widgets()
+
+        #Active Tab ****************************************************************************
+        self.activeTab          = ttk.Frame(self.configbarNotebook)
+
+        self.rgboffsetCheckbutton = ttk.Checkbutton(self.activeTab, text='RGB Offset', variable=self.rgboffsetFilter.activeState).grid(column=0, row=0)
+
+        #Add childs to Notebook***************
+        self.configbarNotebook.add(self.configTab, text='Config')
+        self.configbarNotebook.add(self.activeTab, text='Active Filters')
+
+        #All time showing Buttons****************************************
         self.bottomConfigFrame  = ttk.Frame(self)
-        self.bottomConfigFrame.grid(    column=0, row=4, sticky=tk.W+tk.E)
+        self.bottomConfigFrame.grid(    column=0, row=1, sticky=tk.W+tk.E, pady=10)
         self.bottomConfigFrame.columnconfigure( 0, weight=1)
         self.bottomConfigFrame.columnconfigure( 1, weight=1)
         self.bottomConfigFrame.rowconfigure(    0, weight=1, pad=5)
@@ -47,27 +79,26 @@ class Configbar(ttk.Frame):
         self.randomButton       = ttk.Button(self.bottomConfigFrame, text='Random Render',              underline=0, command=self.apply_filter_random).grid(column=1, row=0, sticky=tk.W+tk.E, padx=5)
         self.showRenderButton   = ttk.Button(self.bottomConfigFrame, text='Preview full sized Image',   underline=8, command=self.preview_image).grid(      column=0, row=1, sticky=tk.W+tk.E, padx=5, columnspan=2)
 
-        self.rgboffsetFilter = rgboffset.RGBoffsetFilter(self.filterConfigFrame, self)
-        self.filterListObj.append(self.rgboffsetFilter)
-        self.rgboffsetFilter.display_widgets()
-
     def apply_filter_random(self, event=None):
         self.disable_configbar()
-        image = self.master.master.sourceImage
+        image = copy(self.master.master.sourceImage)
         for filter in self.filterListObj:
             filter.random_values()
             image = filter.applyFilter(image)
-        self.master.master.tempImage = copy(image)
-        self.master.master.tempImageThumbnail = self.master.master.menubar.create_thumbnail(self.master.master.tempImage)
-        self.master.master.imagepreviewWidget.display_image(self.master.master.tempImageThumbnail)
+        if image != None:
+            self.master.master.tempImage = copy(image)
+            del image
+            self.master.master.tempImageThumbnail = self.master.master.menubar.create_thumbnail(self.master.master.tempImage)
+            self.master.master.imagepreviewWidget.display_image(self.master.master.tempImageThumbnail)
         self.enable_configbar()
 
     def apply_filter(self, event=None):
         self.disable_configbar()
-        image = self.master.master.sourceImage
+        image = copy(self.master.master.sourceImage)
         for filter in self.filterListObj:
             image = filter.applyFilter(image)
         self.master.master.tempImage = copy(image)
+        del image
         self.master.master.tempImageThumbnail = self.master.master.menubar.create_thumbnail(self.master.master.tempImage)
         self.master.master.imagepreviewWidget.display_image(self.master.master.tempImageThumbnail)
         self.enable_configbar()
@@ -85,14 +116,9 @@ class Configbar(ttk.Frame):
                     except:
                         pass
                     changeState(child)
-        changeState(self.filterConfigFrame)
-        changeState(self.bottomConfigFrame)
+        changeState(self)
         self.master.master.master.update_idletasks()
 
     def enable_configbar(self):
         self.disable_configbar('!disabled')
 
-#    def enable_configbar(self):
-#        for child in self.winfo_children():
-#            child.configure(state='normal')
-#        self.inProgress = False

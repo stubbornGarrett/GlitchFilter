@@ -35,6 +35,10 @@ class GlitchFilter(ttk.Frame):
         self.previewActiveVar.set(1)
         self.highResActiveVar        = tk.IntVar()
         self.highResActiveVar.set(0)
+        
+        self.filterList = ['RGB Offset', 'Big Blocks Offset']
+        self.filterListVar           = tk.StringVar()
+        self.filterListVar.set(self.filterList)
 
         self.FILEOPTIONS =  dict(   filetypes=[\
                                 ('JPEG','*.jpg *.jpeg'),
@@ -43,7 +47,6 @@ class GlitchFilter(ttk.Frame):
 
         self.sizeMultiplicator = 1.0
 
-        self.filterList = ['RGB Offset']
 
         self.init_gui()
         self.set_binds()
@@ -59,7 +62,7 @@ class GlitchFilter(ttk.Frame):
         self.imagepreviewWidget = Imagepreview(self.panedMainWindow)
         self.configbarWidget    = Configbar(self.panedMainWindow)
 
-        self.panedMainWindow.add(self.imagepreviewWidget, weight=20)
+        self.panedMainWindow.add(self.imagepreviewWidget, weight=30)
         self.panedMainWindow.add(self.configbarWidget, weight=1)
 
     def set_binds(self):
