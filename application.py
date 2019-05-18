@@ -41,6 +41,8 @@ class GlitchFilter(ttk.Frame):
 
         self.sizeMultiplicator = 1.0
 
+        self.filterList = ['RGB Offset']
+
         self.init_gui()
 
     def init_gui(self):
