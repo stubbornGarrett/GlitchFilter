@@ -7,7 +7,10 @@ from copy import copy
 class Configbar(ttk.Frame):
     def __init__(self, master=None):
         ttk.Frame.__init__(self, master)#, width=400)
+        self.rowconfigure(1, pad=10)
         self.rowconfigure(2, weight=1)
+        self.rowconfigure(3, pad=10)
+        self.rowconfigure(4, pad=10)
         self.columnconfigure(0, weight=1)
 
         self.filterListObj = []
@@ -35,13 +38,13 @@ class Configbar(ttk.Frame):
         self.bottomConfigFrame.grid(    column=0, row=4, sticky=tk.W+tk.E)
         self.bottomConfigFrame.columnconfigure( 0, weight=1)
 
-        self.applyButton        = ttk.Button(self.bottomConfigFrame, text='Apply Changes', command=self.apply_filter).grid(column=0, row=1, sticky=tk.W+tk.E)
+        self.applyButton        = ttk.Button(self.bottomConfigFrame, text='Apply Changes', underline=0, command=self.apply_filter).grid(column=0, row=1, sticky=tk.W+tk.E)
 
         self.rgboffsetFilter = rgboffset.RGBoffsetFilter(self.filterConfigFrame, self)
         self.filterListObj.append(self.rgboffsetFilter)
         self.rgboffsetFilter.display_widgets()
 
-    def apply_filter(self):
+    def apply_filter(self, event=None):
         image = self.master.master.sourceImage
         for filter in self.filterListObj:
             image = filter.applyFilter(image)

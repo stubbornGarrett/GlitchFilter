@@ -11,7 +11,8 @@ class Imagepreview(ttk.Frame):
         self.init_widgets()
 
     def init_widgets(self):
-        self.previewCanvas = tk.Canvas(self)
+        self.master.master.master.update_idletasks()
+        self.previewCanvas = tk.Canvas(self,  highlightthickness=0, background='#333333')
         self.previewCanvas.grid(column=0, row=0)#, sticky='news')
         self.previewCanvas.bind('<MouseWheel>', func=self.update_size_multiplicator)
         

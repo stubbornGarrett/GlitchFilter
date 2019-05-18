@@ -1,4 +1,4 @@
-from tools import logger
+from tools import logger, styleconfig
 from GUI.menubar import Menubar
 #from GUI.toolbar
 from GUI.imagepreview import Imagepreview
@@ -19,6 +19,8 @@ class GlitchFilter(ttk.Frame):
             self.master.iconbitmap('GlitchFilterIcon.ico')
         except:
             logger.log.warning("Icon couldn't be loaded - main window")
+
+        self.GlitchStyle = styleconfig.GlitchStyle()
 
         self.sourceImage             = Image.new('RGB', (1,1), 'pink')
         self.sourceImagePath         = ''
@@ -44,6 +46,7 @@ class GlitchFilter(ttk.Frame):
         self.filterList = ['RGB Offset']
 
         self.init_gui()
+        self.set_binds()
 
     def init_gui(self):
         self.columnconfigure(0, weight=1)
@@ -58,6 +61,9 @@ class GlitchFilter(ttk.Frame):
 
         self.panedMainWindow.add(self.imagepreviewWidget, weight=20)
         self.panedMainWindow.add(self.configbarWidget, weight=1)
+
+    def set_binds(self):
+        self.bind('Ctrl+A', self.configbarWidget.apply_filter)
 
     def quit_application(self):
         self.quit()
@@ -75,6 +81,8 @@ def main():
     except Exception:
         logger.log.exception('Initalisation of window failed!')
     else:
+        application.update()
+        application.imagepreviewWidget.previewCanvas.config(width=application.imagepreviewWidget.winfo_width(), height=application.imagepreviewWidget.winfo_height())
         application.mainloop()
 
 if __name__ == '__main__':
