@@ -31,7 +31,6 @@ class Configbar(ttk.Frame):
         self.configTab.rowconfigure(1, pad=10)
         self.configTab.rowconfigure(2, weight=1)
         self.configTab.rowconfigure(3, pad=10)
-        self.configTab.rowconfigure(4, pad=10)
         self.configTab.columnconfigure(0, weight=1)
 
         #Filter List
@@ -45,15 +44,12 @@ class Configbar(ttk.Frame):
         self.filterListScrollbar['command'] = self.filterListbox.yview
 
         self.firstSeperator     = ttk.Separator(self.configTab)
-        self.firstSeperator.grid(       column=0, row=1, sticky=tk.W+tk.E)
+        self.firstSeperator.grid(       column=0, row=1, sticky=tk.W+tk.E, pady=5)
 
         #Filter Config
         self.filterConfigFrame  = ttk.Frame(self.configTab)
         self.filterConfigFrame.grid(    column=0, row=2, sticky=tk.W+tk.E+tk.N+tk.S, padx=5)
         self.columnconfigure(0, weight=1)
-
-        self.secondSeperator    = ttk.Separator(self.configTab)
-        self.secondSeperator.grid(      column=0, row=3, sticky=tk.W+tk.E)
 
         #Prepare Filters*****************************************************************
         #RGB Offset 

@@ -17,9 +17,9 @@ class BigBlocksFilter():
         self.create_widgets(parent)
         self.mainFrame.columnconfigure(0, weight=0)
         self.mainFrame.columnconfigure(1, weight=0)
-        self.mainFrame.columnconfigure(2, weight=1)
-        #self.mainFrame.rowconfigure(0, weight=0)
-        #self.mainFrame.rowconfigure(1, weight=0, pad=20)
+        #self.mainFrame.columnconfigure(2, weight=1)
+        self.mainFrame.rowconfigure(0, weight=0)
+        self.mainFrame.rowconfigure(1, weight=0)#, pad=20)
         #self.mainFrame.rowconfigure(2, weight=1)
 
     def create_parameters(self):
@@ -49,22 +49,11 @@ class BigBlocksFilter():
         self.blockMaxOffsetLabel        = Label(    self.topFrame, text='Max Offset (%)', anchor='w')
         self.blockMaxOffsetSpinbox      = Spinbox(  self.topFrame, from_=0, to_=100, textvariable=self.blockMaxOffsetVar,   justify='right', width=6, font=self.master.master.master.GlitchStyle.defaultFont)
         self.blockMaxOffsetScale        = Scale(    self.topFrame, from_=0, to_=100, variable=self.blockMaxOffsetVar, orient='horizontal', command=lambda s:self.blockMaxOffsetVar.set('%0.0f' % float(s)))
-        self.seedLabel                  = Label(    self.topFrame, text='Seed (0 - 99999)', anchor='w')
-        self.seedSpinbox                = Spinbox(  self.topFrame, from_=0, to_=99999, textvariable=self.seedVar,           justify='right', width=6, font=self.master.master.master.GlitchStyle.defaultFont)
-        self.randomSeedButton           = Button(   self.topFrame, text=unicodeSymbols[0], command=lambda:self.seedVar.set(randint(0,99999))) #, font=('Arial', '13', 'bold')
-
-    def random_values(self):
-        self.blockCountVar.set(randint(1, 7))
-        self.seedVar.set(int(randint(0, 99999)))
-        self.update_widgets_config()
-
-    def update_widgets_config(self):
-        print('Started updateing widgets')
-        print(self.master.master.master.sourceImage.height)
-        maxHeight = int(( (self.master.master.master.sourceImage.height) / 100) * (100/self.blockCountVar.get()))
-        self.blockMaxHeightSpinbox.config(to_=maxHeight)
-        self.blockMaxHeightVar.set(maxHeight)
-        print('Widgets updated')
+        
+        self.seedFrame                  = Frame(    self.mainFrame)
+        self.seedLabel                  = Label(    self.seedFrame, text='Seed (0 - 99999)', anchor='w')
+        self.seedSpinbox                = Spinbox(  self.seedFrame, from_=0, to_=99999, textvariable=self.seedVar,           justify='right', width=6, font=self.master.master.master.GlitchStyle.defaultFont)
+        self.randomSeedButton           = Button(   self.seedFrame, text=unicodeSymbols[0], command=lambda:self.seedVar.set(randint(0,99999))) #, font=('Arial', '13', 'bold')
 
     def display_widgets(self):
         self.topFrame.grid(             column=0, row=0, sticky='we')
@@ -78,14 +67,22 @@ class BigBlocksFilter():
         self.blockMaxHeightSpinbox.grid(column=1, row=1, sticky='w')
         self.blockMaxOffsetLabel.grid(  column=0, row=2, sticky='we')
         self.blockMaxOffsetSpinbox.grid(column=1, row=2, sticky='w')
-        self.blockMaxOffsetScale.grid(  column=2, row=2, sticky='we')
+        self.blockMaxOffsetScale.grid(  column=0, row=3, sticky='we', columnspan=2)
 
-        self.seedLabel.grid(            column=0, row=3, sticky='we')
-        self.seedSpinbox.grid(          column=1, row=3, sticky='w')
-        self.randomSeedButton.grid(     column=2, row=3, sticky='w')
+        self.seedFrame.grid(            column=0, row=1, sticky='we')#, columnspan=2, pady=10)
+        self.seedLabel.grid(            column=0, row=0, sticky='we')
+        self.randomSeedButton.grid(     column=1, row=0, sticky='w')
+        self.seedSpinbox.grid(          column=2, row=0, sticky='e')
+
+    def random_values(self):
+        self.blockCountVar.set(randint(1, 7))
+        self.seedVar.set(int(randint(0, 99999)))
+        self.update_widgets_config()
 
     def update_widgets_config(self):
-        pass
+        maxHeight = int(( (self.master.master.master.sourceImage.height) / 100) * (100/self.blockCountVar.get()))
+        self.blockMaxHeightSpinbox.config(to_=maxHeight)
+        self.blockMaxHeightVar.set(maxHeight)
 
     def applyFilter(self, image):
         if self.activeState.get():

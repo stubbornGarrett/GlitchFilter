@@ -62,16 +62,15 @@ class GlitchStyle(ttk.Style):
                                                 'selectbackground': self.thirdColor,
                                                 'padding'       : 1,
                                                 'borderwidth'   : 2,
-                                                'padding'       : 0,},
+                                                'padding'       : 0,
+                                                'arrowcolor'    : self.secondColor},
                                 'map'       : { 'arrowcolor'    : [('active', self.thirdColor)]}},
 
             'TScrollbar':       {'configure': { 'background'    : self.secondColor},
                                 'map'       : { 'arrowcolor'    : [('active', self.thirdColor)]}},
 
             'TScale':           {'configure': { 'background'    : self.firstColor},
-                                'map'       : { 'troughcolor'   : [('active', self.thirdColor)]}},
-
-            'TSeparator':       {'configure': { 'padding'       : 30}}
+                                'map'       : { 'background '   : [('active', self.thirdColor)]}},
         })
 
         self.theme_use('GlitchTheme')
