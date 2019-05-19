@@ -47,6 +47,7 @@ class Menubar(tk.Menu):
                 del filename
                 self.parent.sourceImagePath = tempSourceImagePath
                 self.parent.sourceImage     = Image.open(self.parent.sourceImagePath)
+                #self.parent.sourceImage     = self.parent.sourceImage.convert('RGB')
                 self.parent.sourceImage.load()
                 self.parent.tempImage       = copy.copy(self.parent.sourceImage)
                 self.parent.sourceImageThumbnail    = self.create_thumbnail(self.parent.sourceImage)
@@ -56,9 +57,16 @@ class Menubar(tk.Menu):
                 #showerror('Error', 'Loading Image failed! - Filepath:\n{}'.format(tempSourceImagePath))
                 self.parent.sourceImagePath = ''
             else:
-                self.parent.firstImageLoaded = True
-                self.parent.sizeMultiplicator = 1.0
+                self.parent.firstImageLoaded    = True
+                self.parent.sizeMultiplicator   = 1.0
+                self.parent.previewXoffset      = 0
+                self.parent.previewYoffset      = 0
                 self.parent.imagepreviewWidget.adjust_canvas_size(event=None)
+
+                for filter in self.parent.configbarWidget.filterListObj:
+                    filter.update_widgets_config()
+
+                #self.parent.configbarWidget.bigblocksFilter.update_widgets_config()
                 
                 #self.sourceImage.load()
                 #self.firstImageLoaded = True

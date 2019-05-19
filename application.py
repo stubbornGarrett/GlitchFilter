@@ -36,16 +36,17 @@ class GlitchFilter(ttk.Frame):
         self.highResActiveVar        = tk.IntVar()
         self.highResActiveVar.set(0)
         
-        self.filterList = ['RGB Offset', 'Big Blocks Offset']
+        self.filterListStr = []
         self.filterListVar           = tk.StringVar()
-        self.filterListVar.set(self.filterList)
 
         self.FILEOPTIONS =  dict(   filetypes=[\
                                 ('JPEG','*.jpg *.jpeg'),
                                 ('PNG','*.png'),
                                 ("all files","*.*")])
 
-        self.sizeMultiplicator = 1.0
+        self.sizeMultiplicator  = 1.0
+        self.previewXoffset     = 0
+        self.previewYoffset     = 0
 
 
         self.init_gui()
@@ -62,13 +63,26 @@ class GlitchFilter(ttk.Frame):
         self.imagepreviewWidget = Imagepreview(self.panedMainWindow)
         self.configbarWidget    = Configbar(self.panedMainWindow)
 
-        self.panedMainWindow.add(self.imagepreviewWidget, weight=30)
+        self.panedMainWindow.add(self.imagepreviewWidget, weight=10)
         self.panedMainWindow.add(self.configbarWidget, weight=1)
 
     def set_binds(self):
         self.master.bind('<Control-a>', self.configbarWidget.apply_filter)
         self.master.bind('<Control-r>', self.configbarWidget.apply_filter_random)
         self.master.bind('<Control-f>', self.configbarWidget.preview_image)
+        
+        self.master.bind('<Control-x>', self.reset_preview_values)
+        
+        self.master.bind('<Left>',         self.imagepreviewWidget.update_preview_offset)
+        self.master.bind('<Right>',        self.imagepreviewWidget.update_preview_offset)
+        self.master.bind('<Up>',           self.imagepreviewWidget.update_preview_offset)
+        self.master.bind('<Down>',         self.imagepreviewWidget.update_preview_offset)
+
+    def reset_preview_values(self, event=None):
+        self.sizeMultiplicator   = 1.0
+        self.previewXoffset      = 0
+        self.previewYoffset      = 0
+        self.imagepreviewWidget.adjust_canvas_size()
 
     def quit_application(self):
         self.quit()

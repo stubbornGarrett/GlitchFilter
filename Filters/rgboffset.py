@@ -7,9 +7,15 @@ from random import randint
 class RGBoffsetFilter():
     def __init__(self, parent, master):
         self.master = master
+        self.parent = parent
+
+        self.name = 'RGB Offset'
 
         self.create_parameters()
         self.create_widgets(parent)
+        self.mainFrame.columnconfigure(0, weight=0)
+        self.mainFrame.columnconfigure(1, weight=0)
+        self.mainFrame.columnconfigure(2, weight=0)
         self.mainFrame.rowconfigure(0, weight=0)
         self.mainFrame.rowconfigure(1, weight=0, pad=20)
         self.mainFrame.rowconfigure(2, weight=1)
@@ -39,17 +45,17 @@ class RGBoffsetFilter():
 
         self.topFrame       = Frame(self.mainFrame)
 
-        self.RedXlabel      = Label(self.topFrame, text='Red X')
+        self.RedXlabel      = Label(self.topFrame, text='Red X\t(px)')
         self.RedXentry      = Entry(self.topFrame, textvariable=self.RedXvar,   justify='right', width=6, font=self.master.master.master.GlitchStyle.defaultFont)
-        self.GreenXlabel    = Label(self.topFrame, text='Green X')
+        self.GreenXlabel    = Label(self.topFrame, text='Green X\t(px)')
         self.GreenXentry    = Entry(self.topFrame, textvariable=self.GreenXvar, justify='right', width=6, font=self.master.master.master.GlitchStyle.defaultFont)
-        self.BlueXlabel     = Label(self.topFrame, text='Blue X')
+        self.BlueXlabel     = Label(self.topFrame, text='Blue X\t(px)')
         self.BlueXentry     = Entry(self.topFrame, textvariable=self.BlueXvar,  justify='right', width=6, font=self.master.master.master.GlitchStyle.defaultFont)
-        self.RedYlabel      = Label(self.topFrame, text='Red Y')
+        self.RedYlabel      = Label(self.topFrame, text='Red Y\t(px)')
         self.RedYentry      = Entry(self.topFrame, textvariable=self.RedYvar,   justify='right', width=6, font=self.master.master.master.GlitchStyle.defaultFont)
-        self.GreenYlabel    = Label(self.topFrame, text='Green Y')
+        self.GreenYlabel    = Label(self.topFrame, text='Green Y\t(px)')
         self.GreenYentry    = Entry(self.topFrame, textvariable=self.GreenYvar, justify='right', width=6, font=self.master.master.master.GlitchStyle.defaultFont)
-        self.BlueYlabel     = Label(self.topFrame, text='Blue Y')
+        self.BlueYlabel     = Label(self.topFrame, text='Blue Y\t(px)')
         self.BlueYentry     = Entry(self.topFrame, textvariable=self.BlueYvar,  justify='right', width=6, font=self.master.master.master.GlitchStyle.defaultFont)
 
         self.frameSeperator = Separator(self.mainFrame)
@@ -59,9 +65,9 @@ class RGBoffsetFilter():
         self.RandomButton       = Button(       self.bottomFrame, text='Random Values', command=self.random_values)
 
     def display_widgets(self):
-        self.topFrame.grid(     column=0, row=0, sticky='nwe')
+        self.topFrame.grid(     column=0, row=0, sticky='we')
         self.topFrame.columnconfigure(0, weight=1)
-        self.topFrame.columnconfigure(1, weight=1)
+        self.topFrame.columnconfigure(1, weight=0)
 
         self.RedXlabel.grid(    column=0, row=0, sticky='we')
         self.RedXentry.grid(    column=1, row=0, sticky='w')
@@ -78,11 +84,11 @@ class RGBoffsetFilter():
         
         self.frameSeperator.grid(column=0, row=1, sticky='we')
 
-        self.bottomFrame.grid(  column=0, row=2, sticky='nwe')
+        self.bottomFrame.grid(          column=0, row=2, sticky='nwe')
         self.bottomFrame.columnconfigure(0, weight=1)
         self.bottomFrame.columnconfigure(1, weight=1)
-        self.nicerCheckbutton.grid(column=0, row=0, sticky='w')
-        self.RandomButton.grid( column=1, row=0, sticky='we')
+        self.nicerCheckbutton.grid(     column=0, row=0, sticky='w')
+        self.RandomButton.grid(         column=1, row=0, sticky='we')
 
     def random_values(self):
         if self.nicerCheckButtonState.get():
@@ -108,7 +114,7 @@ class RGBoffsetFilter():
 
             print(self.RedXvar)
 
-    def update_widgets_config(self):
+    def update_widgets_config(self, event=None):
         pass
 
     def applyFilter(self, image):
@@ -121,15 +127,15 @@ class RGBoffsetFilter():
             size        = width, height
 
             #Create temporary Images
-            finishedPicture = Image.new('RGB', size)
+            finishedImage = Image.new('RGB', size)
 
             redImage    = Image.new('RGB', size)
             greenImage  = Image.new('RGB', size)
             blueImage   = Image.new('RGB', size)
 
             #Split RGB channels 
-            r, g, b     = sourceImage.split()        #RGB Channels of the source Image
-            rNu, gNu, bNu = finishedPicture.split()  #'RGB' Channels of the generated Image -> all black 
+            r, g, b       = sourceImage.split()      #RGB Channels of the source Image
+            rNu, gNu, bNu = finishedImage.split()    #'RGB' Channels of the generated Image -> all black 
 
             #Create an Image for every channel (merge colored and black channels)
             redImage    = Image.merge('RGB' , (r, gNu, bNu))
@@ -147,8 +153,8 @@ class RGBoffsetFilter():
             rNu, gNu, b = blueImage.split()
 
             #Merge them to final Image
-            finishedPicture      = Image.merge('RGB', (r, g, b))
-            finishedPicture.load()
+            finishedImage      = Image.merge('RGB', (r, g, b))
+            finishedImage.load()
 
-            return finishedPicture
             print('RGB Offset Filter: finished')
+            return finishedImage

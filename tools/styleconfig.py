@@ -57,9 +57,19 @@ class GlitchStyle(ttk.Style):
                                                 'padding'       : 1,
                                                 'borderwidth'   : 3,
                                                 'padding'       : 0,}},
+                                                
+            'TSpinbox':         {'configure': { 'foreground'    : self.firstColor,
+                                                'selectbackground': self.thirdColor,
+                                                'padding'       : 1,
+                                                'borderwidth'   : 2,
+                                                'padding'       : 0,},
+                                'map'       : { 'arrowcolor'    : [('active', self.thirdColor)]}},
 
             'TScrollbar':       {'configure': { 'background'    : self.secondColor},
                                 'map'       : { 'arrowcolor'    : [('active', self.thirdColor)]}},
+
+            'TScale':           {'configure': { 'background'    : self.firstColor},
+                                'map'       : { 'troughcolor'   : [('active', self.thirdColor)]}},
 
             'TSeparator':       {'configure': { 'padding'       : 30}}
         })
