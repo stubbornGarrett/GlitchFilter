@@ -1,23 +1,17 @@
 import tkinter as tk
 import tkinter.ttk as ttk
+import configparser
 
 class GlitchStyle(ttk.Style):
     def __init__(self):
         ttk.Style.__init__(self)
-        
-        self.firstColor         = '#333333' #Background
-        self.secondColor        = '#eeeeee' #Font
-        self.thirdColor         = '#00aaaa' #Highlights (e.g. hovering a button)
-        self.disableColor       = '#555555'
-        self.disableFont        = '#999999'
 
-        self.defaultFont        = ("Calibri", 12)
-
-        self.theme_create('GlitchTheme', settings={
-            '.':                {'configure': { 'background'    : self.firstColor,
-                                                'foreground'    : self.secondColor,
-                                                'highlightcolor': self.thirdColor,
-                                                'font'          : self.defaultFont,
+    def create_theme(self, name, firstColor, secondColor, thirdColor, disableColor, disableFont, defaultFont):
+        self.theme_create(themename=name, settings={
+            '.':                {'configure': { 'background'    : firstColor,
+                                                'foreground'    : secondColor,
+                                                'highlightcolor': thirdColor,
+                                                'font'          : defaultFont,
                                                 'relief'        : 'flat'}},
 
             'TFrame':           {'configure': { 'relief'        : tk.FLAT,
@@ -27,50 +21,50 @@ class GlitchStyle(ttk.Style):
             
             'TNotebook.Tab':    {'configure': { 'padding'       : 2}},
 
-            'TLabel':           {'configure': { 'font'          : self.defaultFont,
+            'TLabel':           {'configure': { 'font'          : defaultFont,
                                                 'padding'       : 3,
                                                 'borderwidth'   : 1,
                                                 'relief'        : 'groove'},
-                                'map'       : { 'background'    : [('disabled', self.disableColor)],
-                                                'foreground'    : [('disabled', self.disableFont)]}},
+                                'map'       : { 'background'    : [('disabled', disableColor)],
+                                                'foreground'    : [('disabled', disableFont)]}},
 
-            'TCheckbutton':     {'configure': { 'background'    : self.firstColor,
-                                                'foreground'    : self.secondColor,
-                                                #'indicatorcolor': self.secondColor,
+            'TCheckbutton':     {'configure': { 'background'    : firstColor,
+                                                'foreground'    : secondColor,
+                                                #'indicatorcolor': secondColor,
                                                 'padding'       : 5},
-                                'map'       : { 'foreground'    : [('disabled', self.disableFont)],
-                                                'activeforeground': [('active', self.thirdColor)],
-                                                'indicatorcolor': [('selected', self.thirdColor)]}},
+                                'map'       : { 'foreground'    : [('disabled', disableFont)],
+                                                'activeforeground': [('active', thirdColor)],
+                                                'indicatorcolor': [('selected', thirdColor)]}},
 
-            'TButton':          {'configure': { 'font'          : self.defaultFont,
+            'TButton':          {'configure': { 'font'          : defaultFont,
                                                 'padding'       : 2,
                                                 'borderwidth'   : 3,
                                                 'justify'       : tk.CENTER,
                                                 'relief'        : tk.RAISED},
-                                'map'       : { 'background'    : [('active', self.thirdColor)],
+                                'map'       : { 'background'    : [('active', thirdColor)],
                                                 'relief'        : [('pressed', tk.SUNKEN)],
-                                                'background'    : [('disabled', self.disableColor)],
-                                                'foreground'    : [('disabled', self.disableFont)]}},
+                                                'background'    : [('disabled', disableColor)],
+                                                'foreground'    : [('disabled', disableFont)]}},
 
-            'TEntry':           {'configure': { 'foreground'    : self.firstColor,
-                                                'selectbackground': self.thirdColor,
+            'TEntry':           {'configure': { 'foreground'    : firstColor,
+                                                'selectbackground': thirdColor,
                                                 'padding'       : 1,
                                                 'borderwidth'   : 3,
                                                 'padding'       : 0,}},
                                                 
-            'TSpinbox':         {'configure': { 'foreground'    : self.firstColor,
-                                                'selectbackground': self.thirdColor,
+            'TSpinbox':         {'configure': { 'foreground'    : firstColor,
+                                                'selectbackground': thirdColor,
                                                 'padding'       : 1,
                                                 'borderwidth'   : 2,
                                                 'padding'       : 0,
-                                                'arrowcolor'    : self.secondColor},
-                                'map'       : { 'arrowcolor'    : [('active', self.thirdColor)]}},
+                                                'arrowcolor'    : secondColor},
+                                'map'       : { 'arrowcolor'    : [('active', thirdColor)]}},
 
-            'TScrollbar':       {'configure': { 'background'    : self.secondColor},
-                                'map'       : { 'arrowcolor'    : [('active', self.thirdColor)]}},
+            'TScrollbar':       {'configure': { 'background'    : secondColor},
+                                'map'       : { 'arrowcolor'    : [('active', thirdColor)]}},
 
-            'TScale':           {'configure': { 'background'    : self.firstColor},
-                                'map'       : { 'background '   : [('active', self.thirdColor)]}},
+            'TScale':           {'configure': { 'background'    : firstColor,
+                                                'borderwidth'   : 0,
+                                                'groovewidth'   : 1},
+                                'map'       : { 'background '   : [('active', thirdColor)]}},
         })
-
-        self.theme_use('GlitchTheme')

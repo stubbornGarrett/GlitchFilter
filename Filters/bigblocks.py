@@ -15,6 +15,7 @@ class BigBlocksFilter():
 
         self.create_parameters()
         self.create_widgets(parent)
+
         self.mainFrame.columnconfigure(0, weight=0)
         self.mainFrame.columnconfigure(1, weight=0)
         #self.mainFrame.columnconfigure(2, weight=1)
@@ -43,17 +44,25 @@ class BigBlocksFilter():
         self.topFrame                   = Frame(self.mainFrame)
 
         self.blockCountLabel            = Label(    self.topFrame, text='Block Count', anchor='w')
-        self.blockCountSpinbox          = Spinbox(  self.topFrame, from_=0, to_=20, textvariable=self.blockCountVar,        justify='right', width=6, font=self.master.master.master.GlitchStyle.defaultFont, command=self.update_widgets_config)#, command=self.update_parameters)
+        self.blockCountSpinbox          = Spinbox(  self.topFrame, from_=0, to_=30, textvariable=self.blockCountVar,        justify='right', width=6, command=self.update_widgets_config)#, command=self.update_parameters)
         self.blockMaxHeightLabel        = Label(    self.topFrame, text='Max Block Height (px)', anchor='w')
-        self.blockMaxHeightSpinbox      = Spinbox(  self.topFrame, from_=0, to_=1, textvariable=self.blockMaxHeightVar,     justify='right', width=6, font=self.master.master.master.GlitchStyle.defaultFont, command=self.update_widgets_config)#, command=self.update_parameters)
+        self.blockMaxHeightSpinbox      = Spinbox(  self.topFrame, from_=0, to_=1,  textvariable=self.blockMaxHeightVar,     justify='right', width=6)#, command=self.update_widgets_config)#, command=self.update_parameters)
         self.blockMaxOffsetLabel        = Label(    self.topFrame, text='Max Offset (%)', anchor='w')
-        self.blockMaxOffsetSpinbox      = Spinbox(  self.topFrame, from_=0, to_=100, textvariable=self.blockMaxOffsetVar,   justify='right', width=6, font=self.master.master.master.GlitchStyle.defaultFont)
+        self.blockMaxOffsetSpinbox      = Spinbox(  self.topFrame, from_=0, to_=100, textvariable=self.blockMaxOffsetVar,   justify='right', width=6)
         self.blockMaxOffsetScale        = Scale(    self.topFrame, from_=0, to_=100, variable=self.blockMaxOffsetVar, orient='horizontal', command=lambda s:self.blockMaxOffsetVar.set('%0.0f' % float(s)))
-        
+
         self.seedFrame                  = Frame(    self.mainFrame)
         self.seedLabel                  = Label(    self.seedFrame, text='Seed (0 - 99999)', anchor='w')
-        self.seedSpinbox                = Spinbox(  self.seedFrame, from_=0, to_=99999, textvariable=self.seedVar,           justify='right', width=6, font=self.master.master.master.GlitchStyle.defaultFont)
+        self.seedSpinbox                = Spinbox(  self.seedFrame, from_=0, to_=99999, textvariable=self.seedVar,           justify='right', width=6)
         self.randomSeedButton           = Button(   self.seedFrame, text=unicodeSymbols[0], command=lambda:self.seedVar.set(randint(0,99999))) #, font=('Arial', '13', 'bold')
+        
+        try:
+            self.blockCountSpinbox.config(    font=self.master.mainWindow.defaultFont)
+            self.blockMaxHeightSpinbox.config(font=self.master.mainWindow.defaultFont)
+            self.blockMaxOffsetSpinbox.config(font=self.master.mainWindow.defaultFont)
+            self.seedSpinbox.config(          font=self.master.mainWindow.defaultFont)
+        except:
+            pass
 
     def display_widgets(self):
         self.topFrame.grid(             column=0, row=0, sticky='we')
@@ -80,7 +89,7 @@ class BigBlocksFilter():
         self.update_widgets_config()
 
     def update_widgets_config(self):
-        maxHeight = int(( (self.master.master.master.sourceImage.height) / 100) * (100/self.blockCountVar.get()))
+        maxHeight = int(( (self.master.mainWindow.sourceImage.height) / 100) * (100/self.blockCountVar.get()))
         self.blockMaxHeightSpinbox.config(to_=maxHeight)
         self.blockMaxHeightVar.set(maxHeight)
 
@@ -93,7 +102,7 @@ class BigBlocksFilter():
             width, height = sourceImage.size
             size = width, height
 
-            finishedImage = copy(sourceImage)
+            image = copy(sourceImage)
 
             x = 0
             while(x < self.blockCountVar.get()):
@@ -108,15 +117,15 @@ class BigBlocksFilter():
                 #Generate random offset value and apply transposed chunk 
                 if(random() > 0.5):
                     randXoffset =  randint(0, int((width/100) * self.blockMaxOffsetVar.get()))
-                    finishedImage.paste(tempCrop, (randXoffset        , randYtop))
-                    finishedImage.paste(tempCrop, (randXoffset - width, randYtop))
+                    image.paste(tempCrop, (randXoffset        , randYtop))
+                    image.paste(tempCrop, (randXoffset - width, randYtop))
                 else:
                     randXoffset = -randint(0, int((width/100) * self.blockMaxOffsetVar.get()))
-                    finishedImage.paste(tempCrop, (randXoffset        , randYtop))
-                    finishedImage.paste(tempCrop, (randXoffset + width, randYtop))
+                    image.paste(tempCrop, (randXoffset        , randYtop))
+                    image.paste(tempCrop, (randXoffset + width, randYtop))
                 x += 1
 
-            finishedImage.load()
+            #image.load()
             seed()   #Randomize seed
             print('Big Blocks Filter: finished')
-            return finishedImage
+        return image
