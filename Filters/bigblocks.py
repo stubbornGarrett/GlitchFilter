@@ -16,13 +16,6 @@ class BigBlocksFilter():
         self.create_parameters()
         self.create_widgets(parent)
 
-        self.mainFrame.columnconfigure(0, weight=0)
-        self.mainFrame.columnconfigure(1, weight=0)
-        #self.mainFrame.columnconfigure(2, weight=1)
-        self.mainFrame.rowconfigure(0, weight=0)
-        self.mainFrame.rowconfigure(1, weight=0)#, pad=20)
-        #self.mainFrame.rowconfigure(2, weight=1)
-
     def create_parameters(self):
         #BigBlocksOffsetFilter parameters
         self.blockCountVar      = IntVar()
@@ -40,8 +33,9 @@ class BigBlocksFilter():
 
     def create_widgets(self, parent):
         self.mainFrame      = parent
+        self.cageFrame      = Frame(self.mainFrame)
 
-        self.topFrame                   = Frame(self.mainFrame)
+        self.topFrame                   = Frame(self.cageFrame)
 
         self.blockCountLabel            = Label(    self.topFrame, text='Block Count', anchor='w')
         self.blockCountSpinbox          = Spinbox(  self.topFrame, from_=0, to_=30, textvariable=self.blockCountVar,        justify='right', width=6, command=self.update_widgets_config)#, command=self.update_parameters)
@@ -51,7 +45,7 @@ class BigBlocksFilter():
         self.blockMaxOffsetSpinbox      = Spinbox(  self.topFrame, from_=0, to_=100, textvariable=self.blockMaxOffsetVar,   justify='right', width=6)
         self.blockMaxOffsetScale        = Scale(    self.topFrame, from_=0, to_=100, variable=self.blockMaxOffsetVar, orient='horizontal', command=lambda s:self.blockMaxOffsetVar.set('%0.0f' % float(s)))
 
-        self.seedFrame                  = Frame(    self.mainFrame)
+        self.seedFrame                  = Frame(    self.cageFrame)
         self.seedLabel                  = Label(    self.seedFrame, text='Seed (0 - 99999)', anchor='w')
         self.seedSpinbox                = Spinbox(  self.seedFrame, from_=0, to_=99999, textvariable=self.seedVar,           justify='right', width=6)
         self.randomSeedButton           = Button(   self.seedFrame, text=unicodeSymbols[0], command=lambda:self.seedVar.set(randint(0,99999))) #, font=('Arial', '13', 'bold')
@@ -65,20 +59,30 @@ class BigBlocksFilter():
             pass
 
     def display_widgets(self):
-        self.topFrame.grid(             column=0, row=0, sticky='we')
-        self.topFrame.columnconfigure(0, weight=0)
-        self.topFrame.columnconfigure(1, weight=0)
-        self.topFrame.columnconfigure(2, weight=1)
+        self.cageFrame.grid(column=0, row=0, sticky='we', padx=3)
+        self.cageFrame.columnconfigure(0, weight=1)
+        self.cageFrame.columnconfigure(1, weight=0)
+        #self.mainFrame.columnconfigure(2, weight=1)
+        self.cageFrame.rowconfigure(0, weight=0)
+        self.cageFrame.rowconfigure(1, weight=0)#, pad=20)
+        #self.mainFrame.rowconfigure(2, weight=1)
 
-        self.blockCountLabel.grid(      column=0, row=0, sticky='we')
+        self.topFrame.grid(             column=0, row=0, sticky='nwe')
+        self.topFrame.columnconfigure(0, weight=1)
+        self.topFrame.columnconfigure(1, weight=0)
+
+        self.blockCountLabel.grid(      column=0, row=0, sticky='we', pady=3)
         self.blockCountSpinbox.grid(    column=1, row=0, sticky='w')
-        self.blockMaxHeightLabel.grid(  column=0, row=1, sticky='we')
+        self.blockMaxHeightLabel.grid(  column=0, row=1, sticky='we', pady=3)
         self.blockMaxHeightSpinbox.grid(column=1, row=1, sticky='w')
         self.blockMaxOffsetLabel.grid(  column=0, row=2, sticky='we')
         self.blockMaxOffsetSpinbox.grid(column=1, row=2, sticky='w')
         self.blockMaxOffsetScale.grid(  column=0, row=3, sticky='we', columnspan=2)
 
-        self.seedFrame.grid(            column=0, row=1, sticky='we')#, columnspan=2, pady=10)
+        self.seedFrame.grid(            column=0, row=1, sticky='we', pady=10)
+        self.seedFrame.columnconfigure(0, weight=0)
+        self.seedFrame.columnconfigure(1, weight=0)
+        self.seedFrame.columnconfigure(2, weight=0)
         self.seedLabel.grid(            column=0, row=0, sticky='we')
         self.randomSeedButton.grid(     column=1, row=0, sticky='w')
         self.seedSpinbox.grid(          column=2, row=0, sticky='e')

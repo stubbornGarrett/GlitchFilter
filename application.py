@@ -133,6 +133,18 @@ class GlitchFilter(ttk.Frame):
         self.master.bind('<Up>',        self.imagepreviewWidget.update_preview_offset)
         self.master.bind('<Down>',      self.imagepreviewWidget.update_preview_offset)
 
+        self.master.bind(   '<MouseWheel>', self.mouseWheel_events)
+
+    def mouseWheel_events(self, event):
+        mouseXpos = self.master.winfo_pointerx()-self.master.winfo_rootx()
+        mouseYpos = self.master.winfo_pointery()-self.master.winfo_rooty()
+
+        if mouseXpos >= self.master.winfo_width() - self.configbarWidget.configbarNotebook.winfo_width() and \
+           mouseYpos >= self.menubar.winfo_height() + (self.configbarWidget.topConfigFrame.winfo_height() + self.defaultFontSize) +30 and \
+           mouseXpos < self.master.winfo_width() and \
+           mouseYpos < self.master.winfo_height() - self.configbarWidget.bottomConfigFrame.winfo_height():
+            self.configbarWidget.filterConfigCanvas.yview_scroll(int(-1*(event.delta/120)), 'units')
+
     def reset_preview_values(self, event=None):
         self.sizeMultiplicator   = 1.0
         self.previewXoffset      = 0
@@ -148,10 +160,8 @@ def main():
         tk.Grid.columnconfigure(root, 0, weight=1)
         tk.Grid.rowconfigure(root, 0, weight=1)
         application = GlitchFilter(root)
-        #root.update()
         root.minsize(root.winfo_width(), root.winfo_height())
         root.state('zoomed')
-        #root.update_idletasks
     except Exception:
         logger.log.exception('Initalisation of window failed!')
     else:

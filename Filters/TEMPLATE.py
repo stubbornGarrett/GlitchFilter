@@ -27,10 +27,14 @@ class CLASSNAMEOFFILTER():  #Change Name!!!
 
     def create_widgets(self, parent):
         self.mainFrame      = parent
+		self.cageFrame		= Frame(self.mainFrame) # Parent of all widgets
         #Create widgets here (no .grid yet)
         #Attach them to 'mainFrame'
 
     def display_widgets(self):
+        self.cageFrame.grid(column=0, row=0, sticky='we', padx=3)
+        self.cageFrame.columnconfigure(0, weight=1)
+        self.cageFrame.columnconfigure(1, weight=0)
         #Display widgets with .grid
         pass
 

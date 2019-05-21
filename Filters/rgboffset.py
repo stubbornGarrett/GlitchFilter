@@ -14,13 +14,6 @@ class RGBoffsetFilter():
         self.create_parameters()
         self.create_widgets(parent)
 
-        self.mainFrame.columnconfigure(0, weight=0)
-        self.mainFrame.columnconfigure(1, weight=0)
-        self.mainFrame.columnconfigure(2, weight=0)
-        self.mainFrame.rowconfigure(0, weight=0)
-        self.mainFrame.rowconfigure(1, weight=0, pad=20)
-        self.mainFrame.rowconfigure(2, weight=1)
-
     def create_parameters(self):
         #RGBoffsetFilter parameters
         self.RedXvar     = IntVar()
@@ -43,8 +36,9 @@ class RGBoffsetFilter():
 
     def create_widgets(self, parent):
         self.mainFrame      = parent
+        self.cageFrame      = Frame(self.mainFrame)
 
-        self.topFrame       = Frame(self.mainFrame)
+        self.topFrame       = Frame(self.cageFrame)
 
         self.RedXlabel      = Label(self.topFrame, text='Red X\t(px)')
         self.RedXentry      = Entry(self.topFrame, textvariable=self.RedXvar,   justify='right', width=6)
@@ -59,44 +53,55 @@ class RGBoffsetFilter():
         self.BlueYlabel     = Label(self.topFrame, text='Blue Y\t(px)')
         self.BlueYentry     = Entry(self.topFrame, textvariable=self.BlueYvar,  justify='right', width=6)
 
-        try:
-            self.RedXentry.config(  font=self.master.mainWindow.GlitchStyle.defaultFont)
-            self.GreenXentry.config(font=self.master.mainWindow.GlitchStyle.defaultFont)
-            self.BlueXentry.config( font=self.master.mainWindow.GlitchStyle.defaultFont)
-            self.RedYentry.config(  font=self.master.mainWindow.GlitchStyle.defaultFont)
-            self.GreenYentry.config(font=self.master.mainWindow.GlitchStyle.defaultFont)
-            self.BlueYentry.config( font=self.master.mainWindow.GlitchStyle.defaultFont)
-        except:
-            pass
+        #try:
+        self.RedXentry.config(  font=self.master.mainWindow.defaultFont)
+        self.GreenXentry.config(font=self.master.mainWindow.defaultFont)
+        self.BlueXentry.config( font=self.master.mainWindow.defaultFont)
+        self.RedYentry.config(  font=self.master.mainWindow.defaultFont)
+        self.GreenYentry.config(font=self.master.mainWindow.defaultFont)
+        self.BlueYentry.config( font=self.master.mainWindow.defaultFont)
+        #except:
+        #    pass
 
-        self.frameSeperator = Separator(self.mainFrame)
+        self.frameSeperator = Separator(self.cageFrame)
        
-        self.bottomFrame        = Frame(        self.mainFrame)
+        self.bottomFrame        = Frame(        self.cageFrame)
         self.nicerCheckbutton   = Checkbutton(  self.bottomFrame, text='Nicer Values',  variable=self.nicerCheckButtonState)
         self.RandomButton       = Button(       self.bottomFrame, text='Random Values', command=self.random_values)
 
     def display_widgets(self):
+        self.mainFrame.columnconfigure( 0, weight=1)
+        self.mainFrame.rowconfigure(    0, weight=1)
+
+        self.cageFrame.grid(    column=0, row=0, sticky='we', padx=3)
+        self.cageFrame.columnconfigure(0, weight=1)#, pad=10)
+        self.cageFrame.columnconfigure(1, weight=0)
+        self.cageFrame.columnconfigure(2, weight=0)
+        self.cageFrame.rowconfigure(0, weight=0)
+        self.cageFrame.rowconfigure(1, weight=0, pad=15)
+        self.cageFrame.rowconfigure(2, weight=0)
+
         self.topFrame.grid(     column=0, row=0, sticky='we')
         self.topFrame.columnconfigure(0, weight=1)
         self.topFrame.columnconfigure(1, weight=0)
 
-        self.RedXlabel.grid(    column=0, row=0, sticky='we')
+        self.RedXlabel.grid(    column=0, row=0, sticky='we', pady=3)
         self.RedXentry.grid(    column=1, row=0, sticky='w')
-        self.RedYlabel.grid(    column=0, row=1, sticky='we')
+        self.RedYlabel.grid(    column=0, row=1, sticky='we', pady=3)
         self.RedYentry.grid(    column=1, row=1, sticky='w')
-        self.GreenXlabel.grid(  column=0, row=2, sticky='we')
+        self.GreenXlabel.grid(  column=0, row=2, sticky='we', pady=3)
         self.GreenXentry.grid(  column=1, row=2, sticky='w')
-        self.GreenYlabel.grid(  column=0, row=3, sticky='we')
+        self.GreenYlabel.grid(  column=0, row=3, sticky='we', pady=3)
         self.GreenYentry.grid(  column=1, row=3, sticky='w')
-        self.BlueXlabel.grid(   column=0, row=4, sticky='we')
+        self.BlueXlabel.grid(   column=0, row=4, sticky='we', pady=3)
         self.BlueXentry.grid(   column=1, row=4, sticky='w')
-        self.BlueYlabel.grid(   column=0, row=5, sticky='we')
+        self.BlueYlabel.grid(   column=0, row=5, sticky='we', pady=3)
         self.BlueYentry.grid(   column=1, row=5, sticky='w')
         
         self.frameSeperator.grid(column=0, row=1, sticky='we')
 
-        self.bottomFrame.grid(          column=0, row=2, sticky='nwe')
-        self.bottomFrame.columnconfigure(0, weight=1)
+        self.bottomFrame.grid(          column=0, row=2, sticky='we')
+        self.bottomFrame.columnconfigure(0, weight=0)
         self.bottomFrame.columnconfigure(1, weight=1)
         self.nicerCheckbutton.grid(     column=0, row=0, sticky='w')
         self.RandomButton.grid(         column=1, row=0, sticky='we')

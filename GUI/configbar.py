@@ -21,7 +21,8 @@ class Configbar(ttk.Frame):
         self.filterListObj = []
         self.init_widgets()
 
-        self.filterListbox.bind('<<ListboxSelect>>', self.update_filter_selection)
+        self.filterListbox.bind(        '<<ListboxSelect>>',                self.update_filter_selection)
+        self.configTab.bind(            '<Configure>',          lambda e:   self.filterConfigCanvas.itemconfig(self.filterConfigCanvasWindow, width=self.configTab.winfo_width()))
 
     def init_widgets(self):
         self.configbarNotebook  = ttk.Notebook(self)
@@ -32,10 +33,10 @@ class Configbar(ttk.Frame):
         
         self.configTab.rowconfigure(1, pad=10)
         self.configTab.rowconfigure(2, weight=1)
-        self.configTab.rowconfigure(3, pad=10)
+        self.configTab.rowconfigure(3)#, pad=10)
         self.configTab.columnconfigure(0, weight=1)
 
-        #Filter List
+        #Filter Listbox
         self.topConfigFrame     = ttk.Frame(self.configTab)
         self.topConfigFrame.grid(       column=0, row=0, sticky=tk.W+tk.E)
         self.topConfigFrame.columnconfigure( 0, weight=1)
@@ -54,16 +55,26 @@ class Configbar(ttk.Frame):
         self.firstSeperator.grid(       column=0, row=1, sticky=tk.W+tk.E, pady=5)
 
         #Filter Config
-        self.filterConfigFrame  = ttk.Frame(self.configTab)
-        self.filterConfigFrame.grid(    column=0, row=2, sticky=tk.W+tk.E+tk.N+tk.S, padx=5)
-        self.columnconfigure(0, weight=1)
+        self.filterConfigCanvas     = tk.Canvas(self.configTab, bd=0, highlightthickness=0)
+        self.filterConfigScrollbar  = ttk.Scrollbar(self.configTab, orient=tk.VERTICAL, command=self.filterConfigCanvas.yview)
+        self.filterConfigCanvas.configure(yscrollcommand=self.filterConfigScrollbar.set)
+        self.filterConfigCanvas.grid(column=0, row=2, sticky=tk.W+tk.E+tk.N)#+tk.S)
+        self.filterConfigCanvas.columnconfigure(0, weight=1)
+        self.filterConfigCanvas.rowconfigure(0, weight=1)
+        try:
+            self.filterConfigCanvas.config(background='green')#self.mainWindow.backgroundColor)
+        except:
+            pass
+        self.filterConfigFrame      = ttk.Frame(self.filterConfigCanvas)
+        #self.filterConfigFrame.grid(    column=0, row=0, sticky=tk.W+tk.E+tk.N+tk.S, padx=5)
+        self.filterConfigCanvasWindow = self.filterConfigCanvas.create_window(0,0, anchor='nw', window=self.filterConfigFrame)
 
         #Prepare Filters*****************************************************************
         #RGB Offset 
         self.rgboffsetFilter = rgboffset.RGBoffsetFilter(self.filterConfigFrame, self)
         self.filterListObj.append(self.rgboffsetFilter)
         self.mainWindow.filterListStr.append(self.rgboffsetFilter.name)
-        #self.rgboffsetFilter.display_widgets()
+        self.rgboffsetFilter.display_widgets()
 
         #Big Blocks Offset
         self.bigblocksFilter = bigblocks.BigBlocksFilter(self.filterConfigFrame, self)
@@ -71,6 +82,11 @@ class Configbar(ttk.Frame):
         self.mainWindow.filterListStr.append(self.bigblocksFilter.name)
 
         self.mainWindow.filterListVar.set(self.mainWindow.filterListStr)
+
+        #self.filterConfigScrollbar.grid(column=1, row=2, sticky='nes')
+        self.filterConfigFrame.update_idletasks()
+        #self.filterConfigCanvas.update_idletasks()
+        self.filterConfigCanvas.configure(scrollregion=self.filterConfigCanvas.bbox('all'), height=self.filterConfigFrame.winfo_height())
 
         #Active Filter Tab ****************************************************************
         self.activeTab          = ttk.Frame(self.configbarNotebook)
@@ -139,6 +155,10 @@ class Configbar(ttk.Frame):
         if selection == self.bigblocksFilter.name:
             self.bigblocksFilter.display_widgets()
 
+        # Update canvas window size
+        self.filterConfigFrame.update_idletasks()
+        self.filterConfigCanvas.configure(scrollregion=self.filterConfigCanvas.bbox('all'), height=self.filterConfigFrame.winfo_height())
+
     def preview_image(self, event=None):
         try:
             self.mainWindow.tempImage.show()
@@ -161,3 +181,5 @@ class Configbar(ttk.Frame):
     def enable_configbar(self):
         self.disable_configbar('normal')
 
+ #   def check_mouse_inside_widget(self, event, widget):
+ #       mouseX = self.mainWindow.master.winfo_pointerx
