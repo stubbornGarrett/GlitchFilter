@@ -40,7 +40,7 @@ class BigBlocksFilter():
         self.blockCountLabel            = Label(    self.topFrame, text='Block Count', anchor='w')
         self.blockCountSpinbox          = Spinbox(  self.topFrame, from_=0, to_=30, textvariable=self.blockCountVar,        justify='right', width=6, command=self.update_widgets_config)#, command=self.update_parameters)
         self.blockMaxHeightLabel        = Label(    self.topFrame, text='Max Block Height (px)', anchor='w')
-        self.blockMaxHeightSpinbox      = Spinbox(  self.topFrame, from_=0, to_=1,  textvariable=self.blockMaxHeightVar,     justify='right', width=6)#, command=self.update_widgets_config)#, command=self.update_parameters)
+        self.blockMaxHeightSpinbox      = Spinbox(  self.topFrame, from_=0, to_=1,  textvariable=self.blockMaxHeightVar,    justify='right', width=6)#, command=self.update_widgets_config)#, command=self.update_parameters)
         self.blockMaxOffsetLabel        = Label(    self.topFrame, text='Max Offset (%)', anchor='w')
         self.blockMaxOffsetSpinbox      = Spinbox(  self.topFrame, from_=0, to_=100, textvariable=self.blockMaxOffsetVar,   justify='right', width=6)
         self.blockMaxOffsetScale        = Scale(    self.topFrame, from_=0, to_=100, variable=self.blockMaxOffsetVar, orient='horizontal', command=lambda s:self.blockMaxOffsetVar.set('%0.0f' % float(s)))
@@ -99,7 +99,7 @@ class BigBlocksFilter():
 
     def applyFilter(self, image):
         if self.activeState.get():
-            print('Big Blocks Filter: started')
+            print(self.name, ': started')
             seed(self.seedVar.get())
             sourceImage = copy(image)
             sourceImage.load()

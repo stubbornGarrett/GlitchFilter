@@ -1,7 +1,7 @@
 from tools import logger
 import tkinter as tk
 import tkinter.ttk as ttk
-from Filters import rgboffset, bigblocks
+from Filters import rgboffset, bigblocks, screenlines
 from copy import copy
 
 class Configbar(ttk.Frame):
@@ -69,17 +69,26 @@ class Configbar(ttk.Frame):
         #self.filterConfigFrame.grid(    column=0, row=0, sticky=tk.W+tk.E+tk.N+tk.S, padx=5)
         self.filterConfigCanvasWindow = self.filterConfigCanvas.create_window(0,0, anchor='nw', window=self.filterConfigFrame)
 
+
+
         #Prepare Filters*****************************************************************
-        #RGB Offset 
+        # RGB Offset 
         self.rgboffsetFilter = rgboffset.RGBoffsetFilter(self.filterConfigFrame, self)
         self.filterListObj.append(self.rgboffsetFilter)
         self.mainWindow.filterListStr.append(self.rgboffsetFilter.name)
         self.rgboffsetFilter.display_widgets()
 
-        #Big Blocks Offset
+        # Big Blocks Offset
         self.bigblocksFilter = bigblocks.BigBlocksFilter(self.filterConfigFrame, self)
         self.filterListObj.append(self.bigblocksFilter)
         self.mainWindow.filterListStr.append(self.bigblocksFilter.name)
+
+        # Screen Lines
+        self.screenlinesFilter = screenlines.ScreenLinesFilter(self.filterConfigFrame, self)
+        self.filterListObj.append(self.screenlinesFilter)
+        self.mainWindow.filterListStr.append(self.screenlinesFilter.name)
+
+
 
         self.mainWindow.filterListVar.set(self.mainWindow.filterListStr)
 
@@ -154,6 +163,9 @@ class Configbar(ttk.Frame):
 
         if selection == self.bigblocksFilter.name:
             self.bigblocksFilter.display_widgets()
+
+        if selection == self.screenlinesFilter.name:
+            self.screenlinesFilter.display_widgets()
 
         # Update canvas window size
         self.filterConfigFrame.update_idletasks()

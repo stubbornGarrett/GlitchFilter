@@ -135,7 +135,7 @@ class RGBoffsetFilter():
 
     def applyFilter(self, image):
         if self.activeState.get():
-            print('RGB Offset Filter: started')
+            print(self.name, ': started')
             #Create Variables
             sourceImage = copy(image)
             width, height = sourceImage.size
