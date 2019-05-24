@@ -47,6 +47,7 @@ class GlitchFilter(ttk.Frame):
 
         writeConfig['Style'] = {
             'backgroundColor': '#333333',
+            'lightBackgroundColor': '#555555',
             'fontColor': '#eeeeee',
             'highlightsColor': '#00aaaa',
             'disableColor': '#555555',
@@ -65,6 +66,7 @@ class GlitchFilter(ttk.Frame):
 
     def create_and_apply_theme(self):
         self.backgroundColor  = self.config.get('Style', 'backgroundColor')    #Background
+        self.lightBackgroundColor  = self.config.get('Style', 'lightBackgroundColor')    #Background
         self.fontColor        = self.config.get('Style', 'fontColor')          #Font
         self.highlightsColor  = self.config.get('Style', 'highlightsColor')    #Highlights (e.g. hovering a button)
         self.disableColor     = self.config.get('Style', 'disableColor')
@@ -75,19 +77,19 @@ class GlitchFilter(ttk.Frame):
         font = '({},{})'.format(self.defaultFont, self.defaultFontSize)
 
         self.style = styleconfig.GlitchStyle()
-        self.style.create_theme('GlitchTheme', self.backgroundColor, self.fontColor, self.highlightsColor, self.disableColor, self.disableFontColor, font)
+        self.style.create_theme('GlitchTheme', self.backgroundColor, self.lightBackgroundColor, self.fontColor, self.highlightsColor, self.disableColor, self.disableFontColor, font)
         self.style.theme_use('GlitchTheme')
 
     def create_variables(self):
-        self.sourceImage             = Image.new('RGB', (1,1), 'pink')
-        self.sourceImagePath         = ''
-        self.sourceImageName         = ''
-        self.sourceImageExtension    = '.png'
-        self.sourceImageThumbnail    = copy(self.sourceImage)
-        self.tempImageThumbnail      = copy(self.sourceImage)
-        self.tempImage               = copy(self.sourceImage)
+        self.sourceImage            = Image.new('RGB', (1,1), 'pink')
+        self.sourceImagePath        = ''
+        self.sourceImageName        = ''
+        self.sourceImageExtension   = '.png'
+        self.previewImage           = copy(self.sourceImage)
+       # self.tempImageThumbnail      = copy(self.sourceImage)
+        self.tempImage              = copy(self.sourceImage)
 
-        self.filetypes               = [('JPEG','*.jpg *.jpeg'),
+        self.filetypes              = [ ('JPEG','*.jpg *.jpeg'),
                                         ('PNG','*.png'),
                                         ("all files","*.*")]
 
@@ -100,10 +102,6 @@ class GlitchFilter(ttk.Frame):
         
         self.filterListStr  = []
         self.filterListVar           = tk.StringVar()
-
-        self.sizeMultiplicator  = 1.0
-        self.previewXoffset     = 0
-        self.previewYoffset     = 0
 
     def init_gui(self):
         self.columnconfigure(0, weight=1)
@@ -126,14 +124,9 @@ class GlitchFilter(ttk.Frame):
         self.master.bind('<Control-r>', self.configbarWidget.apply_filter_random)
         self.master.bind('<Control-f>', self.configbarWidget.preview_image)
         
-        self.master.bind('<Control-x>', self.reset_preview_values)
+        self.master.bind('<Control-x>', self.imagepreviewWidget.reset_preview_values)
 
-        self.master.bind('<Left>',      self.imagepreviewWidget.update_preview_offset)
-        self.master.bind('<Right>',     self.imagepreviewWidget.update_preview_offset)
-        self.master.bind('<Up>',        self.imagepreviewWidget.update_preview_offset)
-        self.master.bind('<Down>',      self.imagepreviewWidget.update_preview_offset)
-
-        self.master.bind(   '<MouseWheel>', self.mouseWheel_events)
+        self.master.bind('<MouseWheel>', self.mouseWheel_events)
 
     def mouseWheel_events(self, event):
         mouseXpos = self.master.winfo_pointerx()-self.master.winfo_rootx()
@@ -144,13 +137,7 @@ class GlitchFilter(ttk.Frame):
            mouseXpos < self.master.winfo_width() and \
            mouseYpos < self.master.winfo_height() - self.configbarWidget.bottomConfigFrame.winfo_height():
             self.configbarWidget.filterConfigCanvas.yview_scroll(int(-1*(event.delta/120)), 'units')
-
-    def reset_preview_values(self, event=None):
-        self.sizeMultiplicator   = 1.0
-        self.previewXoffset      = 0
-        self.previewYoffset      = 0
-        self.imagepreviewWidget.adjust_canvas_size()
-
+            
     def quit_application(self):
         self.quit()
 
@@ -165,8 +152,6 @@ def main():
     except Exception:
         logger.log.exception('Initalisation of window failed!')
     else:
-        #application.update()
-        #application.imagepreviewWidget.previewCanvas.config(width=application.imagepreviewWidget.winfo_width(), height=application.imagepreviewWidget.winfo_height())
         application.mainloop()
 
 if __name__ == '__main__':

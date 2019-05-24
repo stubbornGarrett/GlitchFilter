@@ -1,7 +1,7 @@
 from tools import logger
 import tkinter as tk
 import tkinter.ttk as ttk
-from Filters import rgboffset, bigblocks, screenlines
+from Filters import rgboffset, bigblocks, screenlines, burningnoise
 from copy import copy
 
 class Configbar(ttk.Frame):
@@ -62,10 +62,10 @@ class Configbar(ttk.Frame):
         self.filterConfigCanvas.columnconfigure(0, weight=1)
         self.filterConfigCanvas.rowconfigure(0, weight=1)
         try:
-            self.filterConfigCanvas.config(background='green')#self.mainWindow.backgroundColor)
+            self.filterConfigCanvas.config(background=self.mainWindow.backgroundColor)
         except:
             pass
-        self.filterConfigFrame      = ttk.Frame(self.filterConfigCanvas)
+        self.filterConfigFrame      = ttk.Frame(self.filterConfigCanvas, relief='sunken', borderwidth=5, pad=3)
         #self.filterConfigFrame.grid(    column=0, row=0, sticky=tk.W+tk.E+tk.N+tk.S, padx=5)
         self.filterConfigCanvasWindow = self.filterConfigCanvas.create_window(0,0, anchor='nw', window=self.filterConfigFrame)
 
@@ -73,21 +73,25 @@ class Configbar(ttk.Frame):
 
         #Prepare Filters*****************************************************************
         # RGB Offset 
-        self.rgboffsetFilter = rgboffset.RGBoffsetFilter(self.filterConfigFrame, self)
+        self.rgboffsetFilter    = rgboffset.RGBoffsetFilter(self.filterConfigFrame, self)
         self.filterListObj.append(self.rgboffsetFilter)
         self.mainWindow.filterListStr.append(self.rgboffsetFilter.name)
         self.rgboffsetFilter.display_widgets()
 
         # Big Blocks Offset
-        self.bigblocksFilter = bigblocks.BigBlocksFilter(self.filterConfigFrame, self)
+        self.bigblocksFilter    = bigblocks.BigBlocksFilter(self.filterConfigFrame, self)
         self.filterListObj.append(self.bigblocksFilter)
         self.mainWindow.filterListStr.append(self.bigblocksFilter.name)
 
         # Screen Lines
-        self.screenlinesFilter = screenlines.ScreenLinesFilter(self.filterConfigFrame, self)
+        self.screenlinesFilter  = screenlines.ScreenLinesFilter(self.filterConfigFrame, self)
         self.filterListObj.append(self.screenlinesFilter)
         self.mainWindow.filterListStr.append(self.screenlinesFilter.name)
 
+        # Burning Noise
+        self.burningnoiseFilter = burningnoise.BurningNoiseFilter(self.filterConfigFrame, self)
+        self.filterListObj.append(self.burningnoiseFilter)
+        self.mainWindow.filterListStr.append(self.burningnoiseFilter.name)
 
 
         self.mainWindow.filterListVar.set(self.mainWindow.filterListStr)
@@ -103,9 +107,11 @@ class Configbar(ttk.Frame):
         self.checkButtonFrame   = ttk.Frame(self.activeTab)
         self.checkButtonFrame.grid(column=0, row=0, padx=5, pady=2, sticky=tk.W+tk.N)
 
-        self.rgboffsetCheckbutton = ttk.Checkbutton(self.checkButtonFrame, text='RGB Offset',          variable=self.rgboffsetFilter.activeState).grid(column=0, row=0, sticky=tk.W)
-        self.bigblocksCheckbutton = ttk.Checkbutton(self.checkButtonFrame, text='Big Blocks Offset',   variable=self.bigblocksFilter.activeState).grid(column=0, row=1, sticky=tk.W)
-
+        self.rgboffsetCheckbutton    = ttk.Checkbutton(self.checkButtonFrame, text='RGB Offset',         variable=self.rgboffsetFilter.activeState).grid(    column=0, row=0, sticky=tk.W)
+        self.bigblocksCheckbutton    = ttk.Checkbutton(self.checkButtonFrame, text='Big Blocks Offset',  variable=self.bigblocksFilter.activeState).grid(    column=0, row=1, sticky=tk.W)
+        self.screenlinesCheckbutton  = ttk.Checkbutton(self.checkButtonFrame, text='Screen Lines',       variable=self.screenlinesFilter.activeState).grid(  column=0, row=2, sticky=tk.W)
+        self.burningnoiseCheckbutton = ttk.Checkbutton(self.checkButtonFrame, text='Burning Noise',      variable=self.burningnoiseFilter.activeState).grid( column=0, row=3, sticky=tk.W)
+        
         #Add childs to Notebook***************
         self.configbarNotebook.add(self.configTab, text='Config')
         self.configbarNotebook.add(self.activeTab, text='Active Filters')
@@ -134,8 +140,7 @@ class Configbar(ttk.Frame):
             if image != None:
                 self.mainWindow.tempImage = copy(image)
                 del image
-                self.mainWindow.tempImageThumbnail = self.mainWindow.menubar.create_thumbnail(self.mainWindow.tempImage)
-                self.mainWindow.imagepreviewWidget.display_image()
+                self.mainWindow.imagepreviewWidget.display_image(self.mainWindow.imagepreviewWidget.select_active_image())
             self.enable_configbar()
 
     def apply_filter(self, event=None):
@@ -147,8 +152,8 @@ class Configbar(ttk.Frame):
             if image != None:
                 self.mainWindow.tempImage = copy(image)
                 del image
-                self.mainWindow.tempImageThumbnail = self.mainWindow.menubar.create_thumbnail(self.mainWindow.tempImage)
-                self.mainWindow.imagepreviewWidget.display_image()
+                #self.mainWindow.tempImageThumbnail = self.mainWindow.menubar.create_thumbnail(self.mainWindow.tempImage)
+                self.mainWindow.imagepreviewWidget.display_image(self.mainWindow.imagepreviewWidget.select_active_image())
             self.enable_configbar()
 
     def update_filter_selection(self, event):
@@ -166,6 +171,9 @@ class Configbar(ttk.Frame):
 
         if selection == self.screenlinesFilter.name:
             self.screenlinesFilter.display_widgets()
+
+        if selection == self.burningnoiseFilter.name:
+            self.burningnoiseFilter.display_widgets()
 
         # Update canvas window size
         self.filterConfigFrame.update_idletasks()

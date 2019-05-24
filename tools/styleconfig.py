@@ -6,7 +6,7 @@ class GlitchStyle(ttk.Style):
     def __init__(self):
         ttk.Style.__init__(self)
 
-    def create_theme(self, name, firstColor, secondColor, thirdColor, disableColor, disableFont, defaultFont):
+    def create_theme(self, name, firstColor, lightBackgroundColor, secondColor, thirdColor, disableColor, disableFont, defaultFont):
         self.theme_create(themename=name, settings={
             '.':                {'configure': { 'background'    : firstColor,
                                                 'foreground'    : secondColor,
@@ -23,8 +23,9 @@ class GlitchStyle(ttk.Style):
 
             'TLabel':           {'configure': { 'font'          : defaultFont,
                                                 'padding'       : 3,
-                                                'borderwidth'   : 1,
-                                                'relief'        : 'groove'},
+                                                'borderwidth'   : 2,
+                                                'relief'        : 'groove',
+                                                'background'    : lightBackgroundColor},
                                 'map'       : { 'background'    : [('disabled', disableColor)],
                                                 'foreground'    : [('disabled', disableFont)]}},
 
@@ -63,8 +64,9 @@ class GlitchStyle(ttk.Style):
             'TScrollbar':       {'configure': { 'background'    : secondColor},
                                 'map'       : { 'arrowcolor'    : [('active', thirdColor)]}},
 
-            'TScale':           {'configure': { 'background'    : firstColor,
-                                                'borderwidth'   : 0,
-                                                'groovewidth'   : 1},
+            'TScale':           {'configure': { 'background'    : lightBackgroundColor,
+                                                'borderwidth'   : 1,
+                                                'groovewidth'   : 1,
+                                                'relief'        : 'sunken'},
                                 'map'       : { 'background '   : [('active', thirdColor)]}},
         })

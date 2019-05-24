@@ -79,7 +79,8 @@ class ScreenLinesFilter():
 
     def change_line_color(self, event=None):
         tempColor = colorchooser.askcolor(color=self.lineColor, title='Line Color')
-        if tempColor != None:
+
+        if tempColor != (None, None):
             self.lineColor = (int(tempColor[0][0]), int(tempColor[0][1]), int(tempColor[0][2]))
             hexColor = '#%02X%02X%02X' % self.lineColor
             self.colorCanvas.config(background=hexColor)
@@ -102,14 +103,14 @@ class ScreenLinesFilter():
         self.topFrame.rowconfigure(3, weight=1)
 
         self.lineDensityLabel.grid(     column=0, row=0, sticky='we', pady=3)
-        self.lineDensitySpinbox.grid(   column=1, row=0, sticky='w', columnspan=2)
-        self.lineDensityScale.grid(     column=0, row=1, sticky='we')
+        self.lineDensitySpinbox.grid(   column=1, row=0, sticky='w')
+        self.lineDensityScale.grid(     column=0, row=1, sticky='we', columnspan=2)
         self.lineThicknessLabel.grid(   column=0, row=2, sticky='we', pady=3)
         self.lineThicknessSpinbox.grid( column=1, row=2, sticky='w')
         self.lineBlurLabel.grid(        column=0, row=3, sticky='we', pady=3)
         self.lineBlurSpinbox.grid(      column=1, row=3, sticky='w')
         self.blendmodeLabel.grid(       column=0, row=4, sticky='we', pady=3)
-        self.blendmodeOptionmenu.grid(  column=1, row=4, sticky='w')
+        self.blendmodeOptionmenu.grid(  column=0, row=5, sticky='e')
 
         self.checkbuttonFrame.grid(     column=0, row=1, sticky='we')
         self.checkbuttonFrame.columnconfigure(0, weight=1)
