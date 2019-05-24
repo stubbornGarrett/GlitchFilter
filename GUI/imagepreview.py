@@ -48,7 +48,7 @@ class Imagepreview(ttk.Frame):
         self.display_image(self.select_active_image())
 
     def zoom(self, event):
-        if event.delta >= 0 and self.canvasScale < 20:
+        if event.delta >= 0 and self.canvasScale < 3:
             self.canvasScale *= 1.2
         if event.delta <  0 and self.canvasScale > 0.1:
             self.canvasScale *= 1/1.2
@@ -60,7 +60,7 @@ class Imagepreview(ttk.Frame):
 
         scaleWidth, scaleHeight = int(image.width*(self.canvasScale)), int(image.height*(self.canvasScale))
         size    = scaleWidth, scaleHeight
-        image   = image.resize(size, resample=Image.LANCZOS)
+        image   = image.resize(size, resample=Image.NEAREST)#, resample=Image.LANCZOS)
 
         z = int((self.previewCanvas.winfo_width()-scaleWidth)/2)+1
         y = int((self.previewCanvas.winfo_height()-scaleHeight)/2)+1
@@ -86,6 +86,7 @@ class Imagepreview(ttk.Frame):
             bottomEdge = image.height
 
         image = image.crop((leftEdge, topEdge, rightEdge, bottomEdge))
+        image.save('./pic/pic1.jpg')
 
         # draw
         x = self.previewCanvas.winfo_width() / 2 + (leftEdge + rightEdge  - scaleWidth)  /2

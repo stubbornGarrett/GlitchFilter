@@ -21,17 +21,17 @@ class BurningNoiseFilter():
         self.randomNoiseData = []
 
         self.pixelSizeVar       = IntVar()
-        self.pixelSizeVar.set(  2)
+        self.pixelSizeVar.set(  1)
         self.stretchWidthVar    = IntVar()
-        self.stretchWidthVar.set(60)
+        self.stretchWidthVar.set(25)
         self.stretchHeightVar   = IntVar()
         self.stretchHeightVar.set(0)
         self.brightVar          = IntVar()
         self.brightVar.set(     150)
         self.darkVar            = IntVar()
-        self.darkVar.set(       20)
+        self.darkVar.set(       10)
         self.contrastVar        = IntVar()
-        self.contrastVar.set(   40)
+        self.contrastVar.set(   0)
         self.intensityVar       = IntVar()
         self.intensityVar.set(  80)
         self.blurVar            = IntVar()
@@ -72,8 +72,8 @@ class BurningNoiseFilter():
         self.secondSeparator         = Separator(     self.topFrame)
         
         self.contrastLabel           = Label(         self.topFrame, text='Contrast\t(%)')
-        self.contrastSpinbox         = Spinbox(       self.topFrame, from_=0, to_=100, textvariable=self.contrastVar, command=self.update_widgets_config,   justify='right', width=6)
-        self.contrastScale           = Scale(         self.topFrame, from_=0, to_=100, variable=self.contrastVar, orient='horizontal', command=self.update_widgets_config)
+        self.contrastSpinbox         = Spinbox(       self.topFrame, from_=-50, to_=50, textvariable=self.contrastVar, command=self.update_widgets_config,   justify='right', width=6)
+        self.contrastScale           = Scale(         self.topFrame, from_=-50, to_=50, variable=self.contrastVar, orient='horizontal', command=self.update_widgets_config)
         self.intensityLabel          = Label(         self.topFrame, text='Intensity\t(%)')
         self.intensitySpinbox        = Spinbox(       self.topFrame, from_=0, to_=100, textvariable=self.intensityVar, command=self.update_widgets_config,  justify='right', width=6)
         self.intensityScale          = Scale(         self.topFrame, from_=0, to_=100, variable=self.intensityVar, orient='horizontal', command=self.update_widgets_config)
@@ -208,7 +208,7 @@ class BurningNoiseFilter():
                 noiseMask = noiseMask.convert('RGB')
 
             burnedImage = copy(sourceImage)
-            tempContrast = float(1-self.contrastVar.get()/100)
+            tempContrast = float(1-(self.contrastVar.get()+50)/100)
 
             if tempContrast <= 0.0: 
                 tempContrast = 0.001
