@@ -1,6 +1,7 @@
 from tools import logger
 import tkinter as tk
 import tkinter.ttk as ttk
+from tkinter.messagebox import showerror
 from Filters import rgboffset, bigblocks, screenlines, burningnoise
 from copy import copy
 
@@ -9,10 +10,6 @@ class Configbar(ttk.Frame):
         ttk.Frame.__init__(self, master)#, width=400)
         self.mainWindow = mainWindow
 
-        #self.rowconfigure(1, pad=10)
-        #self.rowconfigure(2, weight=1)
-        #self.rowconfigure(3, pad=10)
-        #self.rowconfigure(4, pad=10)
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
 
@@ -128,7 +125,7 @@ class Configbar(ttk.Frame):
         self.showRenderButton.grid(                                               column=1, row=1, sticky=tk.W+tk.E, padx=5)
         self.previewCheckbutton = ttk.Checkbutton(  self.bottomConfigFrame, text='Preview', variable=self.mainWindow.previewActiveVar, command=self.mainWindow.imagepreviewWidget.display_image)
         self.previewCheckbutton.grid( column=0, row=2, sticky=tk.W,      padx=3)
-        self.resetPreviewButton = ttk.Button(       self.bottomConfigFrame, text='Reset Preview (Ctrl+X)',                  command=self.mainWindow.imagepreviewWidget.reset_preview_values)
+        self.resetPreviewButton = ttk.Button(       self.bottomConfigFrame, text='Reset Preview (Ctrl+Z)',                  command=self.mainWindow.imagepreviewWidget.reset_preview_values)
         self.resetPreviewButton.grid(                                               column=1, row=2, sticky=tk.W+tk.E, padx=5)
 
     def apply_filter_random(self, event=None):
@@ -183,41 +180,7 @@ class Configbar(ttk.Frame):
             try:
                 self.mainWindow.tempImage.show()
             except:
-                # ERROR
-                pass
-
-    # def disable_configbar(self, state='disabled'):
-    #     self.inProgress = True
-    #     self.filterListbox.config(state=state)
-    #     #self.filterListScrollbar.config(state=state)
-    #     self.applyButton.config(state=state)
-    #     self.randomButton.config(state=state)
-    #     self.showRenderButton.config(state=state)
-    #     self.previewCheckbutton.config(state=state)
-    #     self.resetPreviewButton.config(state=state)
-
-    #     print(int(self.filterListbox.curselection()[1]))
-
-    #     if state == 'normal' and self.filterListObj[int(self.filterListbox.curselection()[0])].activeState == 1:
-    #         for child in self.filterListObj[self.filterListbox.curselection()].cageFrame.winfo_children():
-    #             try:
-    #                 child.configure(state='normal')
-    #             except:
-    #                 pass
-
-    #     elif state == 'disable':
-    #         for child in self.filterListObj[int(self.filterListbox.curselection()[0])].cageFrame.winfo_children():
-    #             try:
-    #                 child.configure(state='disable')
-    #             except:
-    #                 pass
-
-    #     self.mainWindow.master.update_idletasks()
-
-    def enable_configbar(self):
-        self.disable_configbar('normal')
-        self.inProgress = False
-
+                showerror('Error', 'Image preview failed!\n(Your System must provide an image viewer)')
 
     def disable_configbar(self, state='disabled'):
         self.inProgress = True
@@ -230,4 +193,8 @@ class Configbar(ttk.Frame):
                         pass
                     changeState(child)
         changeState(self)
-        self.mainWindow.master.update_idletasks()
+        self.update()
+
+    def enable_configbar(self):
+        self.disable_configbar('normal')
+        self.inProgress = False

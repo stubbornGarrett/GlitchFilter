@@ -8,6 +8,7 @@ from GUI.menubar import Menubar
 from GUI.imagepreview import Imagepreview
 from GUI.configbar import Configbar
 from PIL import Image, ImageTk
+from tkinter.messagebox import askyesno
 import tkinter as tk
 import tkinter.ttk as ttk
 
@@ -96,7 +97,8 @@ class GlitchFilter(ttk.Frame):
                                         ('PNG','*.png'),
                                         ("all files","*.*")]
 
-        self.firstImageLoaded        = False
+        self.firstImageLoaded       = False
+        self.imageIsSaved           = True
 
         self.previewActiveVar        = tk.IntVar()
         self.previewActiveVar.set(1)
@@ -127,7 +129,7 @@ class GlitchFilter(ttk.Frame):
         self.master.bind('<Control-r>', self.configbarWidget.apply_filter_random)
         self.master.bind('<Control-f>', self.configbarWidget.preview_image)
         
-        self.master.bind('<Control-x>', self.imagepreviewWidget.reset_preview_values)
+        self.master.bind('<Control-z>', self.imagepreviewWidget.reset_preview_values)
 
         self.master.bind('<MouseWheel>', self.mouseWheel_events)
 
@@ -140,9 +142,18 @@ class GlitchFilter(ttk.Frame):
            mouseXpos < self.master.winfo_width() and \
            mouseYpos < self.master.winfo_height() - self.configbarWidget.bottomConfigFrame.winfo_height():
             self.configbarWidget.filterConfigCanvas.yview_scroll(int(-1*(event.delta/120)), 'units')
-            
+
+    def continue_without_save(self):
+        if not self.imageIsSaved:
+            title   = 'Unsaved Image'
+            message = 'There are unsaved changes.\nIf you continue, these changes will be lost.\n\nContinue without saveing?'
+            return askyesno(title, message)
+        else:
+            return True
+
     def quit_application(self):
-        self.quit()
+        if self.continue_without_save():
+            self.quit()
 
 def main():
     try:

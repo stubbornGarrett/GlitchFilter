@@ -2,7 +2,8 @@ from tools import logger
 import tkinter as tk
 import os
 from copy import copy
-from tkinter.filedialog import askopenfilename, asksaveasfile
+from tkinter.messagebox import showerror
+from tkinter.filedialog import askopenfilename, asksaveasfilename, asksaveasfile
 from tools import logger
 from PIL import Image, ImageTk
 #from tkinter import ttk
@@ -21,16 +22,16 @@ class Menubar(tk.Menu):
         self.helpMenu = tk.Menu(self, tearoff=0)
 
         #File Menu
-        self.add_cascade(label='File', menu=self.fileMenu)
-        self.fileMenu.add_command(label='Open Image', accelerator='Ctrl+O', command=self.open_image)
+        self.add_cascade(label='File', underline=0, menu=self.fileMenu)
+        self.fileMenu.add_command(label='Open Image', underline=0, accelerator='Ctrl+O', command=self.open_image, font=self.mainWindow.defaultFont)
         self.fileMenu.add_command(label='Save', accelerator='Ctrl+S', command=self.save_image)
-        self.fileMenu.add_command(label='Save Image as...')#, accelerator='Ctrl+Alt+S', command=self.save_image_as)
+        self.fileMenu.add_command(label='Save Image as...', accelerator='Ctrl+Shift+S', command=self.save_image_as)
         self.fileMenu.add_separator()
         self.fileMenu.add_command(label='Exit', command=mainWindow.quit_application)
 
         self.bind_all('<Control-o>', self.open_image)
         self.bind_all('<Control-s>', self.save_image)
-        #bind_all('<Control-Alt-s>', self.save_image_as)
+        self.bind_all('<Control-Shift-KeyPress-S>', self.save_image_as)
 
         #Help Menu
         self.add_cascade(label='Help', menu=self.helpMenu)
@@ -40,7 +41,7 @@ class Menubar(tk.Menu):
         tempSourceImagePath = ''
         tempSourceImagePath = askopenfilename(title='Open Image...', defaultextension='.', filetypes=self.mainWindow.filetypes) # initialdir='/', 
 
-        if tempSourceImagePath: # and self.continue_without_save():
+        if tempSourceImagePath and self.mainWindow.continue_without_save():
             try:
                 self.mainWindow.sourceImage = Image.open(tempSourceImagePath)
                 self.mainWindow.sourceImage.load()
@@ -53,13 +54,14 @@ class Menubar(tk.Menu):
                 self.mainWindow.tempImage   = copy(self.mainWindow.sourceImage)
             except:
                 logger.log.exception('Loading Image failed! - Filepath: ', tempSourceImagePath)
-                #showerror('Error', 'Loading Image failed! - Filepath:\n{}'.format(tempSourceImagePath))
+                showerror('Error', 'Loading Image failed! - Filepath:\n{}'.format(tempSourceImagePath))
                 self.mainWindow.sourceImagePath     = ''
                 self.mainWindow.firstImageLoaded    = False
                 self.mainWindow.tempImage           = None
                 self.mainWindow.sourceImage         = None
             else:
                 self.mainWindow.firstImageLoaded    = True
+                self.mainWindow.imageIsSaved        = False
                 self.mainWindow.imagepreviewWidget.previewImage = copy(self.mainWindow.sourceImage)
                 self.mainWindow.imagepreviewWidget.reset_preview_values()
                 if self.mainWindow.sourceImage.height/self.mainWindow.imagepreviewWidget.previewCanvas.winfo_height() > self.mainWindow.sourceImage.width/self.mainWindow.imagepreviewWidget.previewCanvas.winfo_width():
@@ -71,20 +73,21 @@ class Menubar(tk.Menu):
                 for filter in self.mainWindow.configbarWidget.filterListObj:
                     filter.update_widgets_config()
 
-                #self.sourceImage.load()
-                #self.sourceImage = self.sourceImage.convert('RGB')
-
     def save_image(self, event=None):
         if self.mainWindow.firstImageLoaded:
-            self.mainWindow.tempImage.save('{}{}{}{}'.format(self.mainWindow.sourceImagePath, self.mainWindow.sourceImageName, '-Glitch', self.mainWindow.sourceImageExtension))
+            try:
+                self.mainWindow.tempImage.save('{}\{}{}{}'.format(self.mainWindow.sourceImagePath, self.mainWindow.sourceImageName, '-Glitch', self.mainWindow.sourceImageExtension))
+            except:
+                logger.log.exception('Saveing Image failed!')
+                showerror('Error', 'Saveing Image failed! - Filepath:\n{}'.format('{}\{}{}{}'.format(self.mainWindow.sourceImagePath, self.mainWindow.sourceImageName, '-Glitch', self.mainWindow.sourceImageExtension)))
 
-    # def create_thumbnail(self, image):
-    #     if image.width > self.mainWindow.imagepreviewWidget.previewCanvas.winfo_width() or image.height > self.mainWindow.imagepreviewWidget.previewCanvas.winfo_height():
-    #         if image.height > self.master.winfo_screenheight():
-    #             scale = self.master.winfo_screenheight() / image.height
-    #             image = image.resize((int(image.width * scale), int(image.height * scale)), resample=Image.LANCZOS)
-    #         if image.width > self.master.winfo_screenwidth():
-    #             scale = self.master.winfo_screenwidth() / image.width
-    #             image = image.resize((int(image.width * scale), int(image.height * scale)), resample=Image.LANCZOS)
-    #     print('Created thumbnail!')
-    #     return image
+    def save_image_as(self, event=None):
+        if self.mainWindow.firstImageLoaded:
+            tempFilePath = asksaveasfilename(initialdir='{}/'.format(self.mainWindow.sourceImagePath), title='Save Image...', defaultextension=self.mainWindow.sourceImageExtension, filetypes=self.mainWindow.filetypes)
+        try:
+            if tempFilePath:
+                self.tempImage.save(tempFilePath)
+                self.isImageSaved = True
+        except:
+            logger.log.exception('Saveing Image failed!')
+            showerror('Error', 'Saveing Image failed! - Filepath:\n{}'.format(tempFilePath))

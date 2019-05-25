@@ -44,13 +44,10 @@ class Imagepreview(ttk.Frame):
         scaleWidth, scaleHeight = int(self.mainWindow.sourceImage.width*(self.canvasScale)), int(self.mainWindow.sourceImage.height*(self.canvasScale))
         z = int((self.previewCanvas.winfo_width()-scaleWidth)/2)+1
         w = int((self.previewCanvas.winfo_height()-scaleHeight)/2)+1
-        if self.previewCanvas.canvasx(0) > z:
-            self.display_image(self.select_active_image())
-        elif scaleWidth+z-(self.previewCanvas.canvasx(0)) > self.previewCanvas.winfo_width():
-            self.display_image(self.select_active_image())
-        elif self.previewCanvas.canvasy(0) > w:
-            self.display_image(self.select_active_image())
-        elif scaleHeight+w-(self.previewCanvas.canvasy(0)) > self.previewCanvas.winfo_height():
+        if self.previewCanvas.canvasx(0) > z \
+        or scaleWidth+z-(self.previewCanvas.canvasx(0)) > self.previewCanvas.winfo_width() \
+        or self.previewCanvas.canvasy(0) > w \
+        or scaleHeight+w-(self.previewCanvas.canvasy(0)) > self.previewCanvas.winfo_height():
             self.display_image(self.select_active_image())
 
     def zoom(self, event):
@@ -75,20 +72,18 @@ class Imagepreview(ttk.Frame):
             w = int((self.previewCanvas.winfo_height()-scaleHeight)/2)+1
 
             leftEdge    = self.previewCanvas.canvasx(0)-z               if self.previewCanvas.canvasx(0)                 > z                                    else 0
-
             rightEdge   = scaleWidth+(z+self.previewCanvas.canvasx(0))  if scaleWidth+z-(self.previewCanvas.canvasx(0))  > self.previewCanvas.winfo_width()     else image.width
-
             topEdge     = self.previewCanvas.canvasy(0)-w               if self.previewCanvas.canvasy(0)                 > w                                    else 0
-            
             bottomEdge  = scaleHeight+(w+self.previewCanvas.canvasy(0)) if scaleHeight+w-(self.previewCanvas.canvasy(0)) > self.previewCanvas.winfo_height()    else image.height
 
-            image = image.crop((leftEdge, topEdge, rightEdge, bottomEdge))
+            if rightEdge - leftEdge > 0 and bottomEdge - topEdge > 0:
+                image = image.crop((leftEdge, topEdge, rightEdge, bottomEdge))
 
-            # draw
-            x = self.previewCanvas.winfo_width() / 2 + (leftEdge + rightEdge  - scaleWidth)  /2
-            y = self.previewCanvas.winfo_height()/ 2 + (topEdge  + bottomEdge - scaleHeight) /2
-            self.mainWindow.previewImage = ImageTk.PhotoImage(image)
-            self.previewImage_ID            = self.previewCanvas.create_image(x, y, image=self.mainWindow.previewImage)
+                # draw
+                x = self.previewCanvas.winfo_width() / 2 + (leftEdge + rightEdge  - scaleWidth)  /2
+                y = self.previewCanvas.winfo_height()/ 2 + (topEdge  + bottomEdge - scaleHeight) /2
+                self.mainWindow.previewImage = ImageTk.PhotoImage(image)
+                self.previewImage_ID            = self.previewCanvas.create_image(x, y, image=self.mainWindow.previewImage)
             self.previewCanvas.scale(tk.ALL, x, y,self.canvasScale, self.canvasScale)
 
 

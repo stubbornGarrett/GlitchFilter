@@ -129,7 +129,6 @@ class BigBlocksFilter():
                     image.paste(tempCrop, (randXoffset + width, randYtop))
                 x += 1
 
-            #image.load()
             seed()   #Randomize seed
             print('Big Blocks Filter: finished')
         return image

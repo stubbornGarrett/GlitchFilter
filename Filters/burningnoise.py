@@ -82,7 +82,6 @@ class BurningNoiseFilter():
         self.intensityScale          = Scale(         self.topFrame, from_=0, to_=100, variable=self.intensityVar, orient='horizontal', command=self.update_widgets_config)
         
         self.checkbuttonFrame        = Frame(         self.topFrame)
-        self.invertCheckbutton       = Checkbutton(   self.checkbuttonFrame, text='Invert', variable=self.invertState)  
         self.colorCheckbutton        = Checkbutton(   self.checkbuttonFrame, text='Colored', variable=self.colorState)  
 
         self.seedFrame               = Frame(         self.topFrame)
@@ -145,9 +144,7 @@ class BurningNoiseFilter():
 
         self.checkbuttonFrame.grid(     column=0, row=15, sticky='we', columnspan=2)
         self.checkbuttonFrame.columnconfigure(0, weight=0)
-        self.checkbuttonFrame.columnconfigure(1, weight=0)
-        self.invertCheckbutton.grid(    column=0, row=0, sticky='w', pady=6)
-        self.colorCheckbutton.grid(     column=1, row=0, sticky='w', pady=6)
+        self.colorCheckbutton.grid(     column=0, row=0, sticky='w', pady=6)
 
         self.seedFrame.grid(            column=0, row=16, sticky='we', columnspan=2)
         self.seedFrame.columnconfigure(0, weight=0)
@@ -159,7 +156,6 @@ class BurningNoiseFilter():
 
     def random_values(self):
         if self.activeState.get():
-            #Function gets executed, when 'Random Render' Button is hit
             pass
 
     def update_widgets_config(self, event=None):
@@ -210,22 +206,19 @@ class BurningNoiseFilter():
                 noiseMask = noiseMask.convert('RGB')
 
             burnedImage = copy(sourceImage)
-            tempContrast = float(1-(self.contrastVar.get()+50)/100)
+            contrast = float(1-(self.contrastVar.get()+50)/100)
 
-            if tempContrast <= 0.0: 
-                tempContrast = 0.001
+            if contrast <= 0.0: 
+                contrast = 0.001
 
-            if self.invertState.get():
-                burnedImage = ImageChops.subtract(noiseMask, burnedImage, tempContrast)
-            else:
-                burnedImage = ImageChops.subtract(burnedImage, noiseMask, tempContrast)
+            burnedImage = ImageChops.subtract(burnedImage, noiseMask, contrast)
 
             if self.blurVar.get() != 0:
                 burnedImage = burnedImage.filter(ImageFilter.GaussianBlur(self.blurVar.get()))
 
-            tempAlpha = float(self.intensityVar.get() / 100)
+            alpha = float(self.intensityVar.get() / 100)
 
-            image = ImageChops.blend(sourceImage, burnedImage, tempAlpha)
+            image = ImageChops.blend(sourceImage, burnedImage, alpha)
 
             seed()
             np.random.seed()

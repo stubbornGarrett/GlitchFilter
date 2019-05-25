@@ -59,16 +59,14 @@ class ScreenLinesFilter():
 
         self.blendmodeFrame         = Frame(        self.cageFrame)
         self.blendmodeLabel         = Label(        self.blendmodeFrame, text='Blend Mode:')
-        self.blendmodeOptionmenu    = OptionMenu(   self.blendmodeFrame, self.blendmode, *self.blendmodeList)
+        self.blendmodeOptionmenu    = OptionMenu(   self.blendmodeFrame, self.blendmode, self.blendmodeList[0], *self.blendmodeList)
         
         try:
-        #self.blendmodeOptionmenu['menu'].config(background=self.master.mainWindow.backgroundColor, foreground=self.master.mainWindow.fontColor)
-        #self.blendmodeOptionmenu.config(        background=self.master.mainWindow.backgroundColor)
-
             self.lineDensitySpinbox.config(         font=self.master.mainWindow.defaultFont)
             self.lineThicknessSpinbox.config(       font=self.master.mainWindow.defaultFont)
             self.lineBlurSpinbox.config(            font=self.master.mainWindow.defaultFont)
-            self.blendmodeOptionmenu['menu'].config(bg=self.master.mainWindow.backgroundColor, fg=self.master.mainWindow.fontColor)
+            self.blendmodeOptionmenu['menu'].config(font=self.master.mainWindow.defaultFont)
+            #self.blendmodeOptionmenu['menu'].config(bg=self.master.mainWindow.backgroundColor, fg=self.master.mainWindow.fontColor)
         except:
             pass
 
