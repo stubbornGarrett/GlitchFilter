@@ -52,7 +52,6 @@ class Imagepreview(ttk.Frame):
             self.display_image(self.select_active_image())
         elif scaleHeight+w-(self.previewCanvas.canvasy(0)) > self.previewCanvas.winfo_height():
             self.display_image(self.select_active_image())
-        #self.display_image(self.select_active_image())
 
     def zoom(self, event):
         if event.delta >= 0 and self.canvasScale < 3:
@@ -63,8 +62,6 @@ class Imagepreview(ttk.Frame):
 
     def display_image(self, image=None, x=0, y=0):
         if self.mainWindow.firstImageLoaded:
-            #x = x + self.previewCanvas.winfo_width()/2
-            #y = y + self.previewCanvas.winfo_height()/2
             if image == None:
                 image = self.select_active_image()
             if self.previewImage_ID:
@@ -96,7 +93,10 @@ class Imagepreview(ttk.Frame):
 
 
     def reset_preview_values(self, event=None):
-        self.canvasScale = 1.0
+        if self.mainWindow.sourceImage.height/self.previewCanvas.winfo_height() > self.mainWindow.sourceImage.width/self.previewCanvas.winfo_width():
+            self.canvasScale = self.previewCanvas.winfo_height() / self.previewImage.height
+        else:
+            self.canvasScale = self.previewCanvas.winfo_width() / self.previewImage.width
         self.previewCanvas.xview_moveto(self.canvasZeroX)
         self.previewCanvas.yview_moveto(self.canvasZeroY)
         self.adjust_canvas_size()
