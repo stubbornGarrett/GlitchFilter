@@ -56,8 +56,10 @@ class ScreenLinesFilter():
         self.lineThicknessSpinbox   = Spinbox(      self.topFrame, from_=0, to_=9999,   textvariable=self.lineThickness,    justify='right', width=6)
         self.lineBlurLabel          = Label(        self.topFrame, text='Blur\t(px)')
         self.lineBlurSpinbox        = Spinbox(      self.topFrame, from_=0, to_=9999,   textvariable=self.lineBlur,         justify='right', width=6)
-        self.blendmodeLabel         = Label(        self.topFrame, text='Blend Mode')
-        self.blendmodeOptionmenu    = OptionMenu(   self.topFrame, self.blendmode, *self.blendmodeList)
+
+        self.blendmodeFrame         = Frame(        self.cageFrame)
+        self.blendmodeLabel         = Label(        self.blendmodeFrame, text='Blend Mode:')
+        self.blendmodeOptionmenu    = OptionMenu(   self.blendmodeFrame, self.blendmode, *self.blendmodeList)
         
         try:
         #self.blendmodeOptionmenu['menu'].config(background=self.master.mainWindow.backgroundColor, foreground=self.master.mainWindow.fontColor)
@@ -66,6 +68,7 @@ class ScreenLinesFilter():
             self.lineDensitySpinbox.config(         font=self.master.mainWindow.defaultFont)
             self.lineThicknessSpinbox.config(       font=self.master.mainWindow.defaultFont)
             self.lineBlurSpinbox.config(            font=self.master.mainWindow.defaultFont)
+            self.blendmodeOptionmenu['menu'].config(bg=self.master.mainWindow.backgroundColor, fg=self.master.mainWindow.fontColor)
         except:
             pass
 
@@ -74,7 +77,7 @@ class ScreenLinesFilter():
 
         self.colorChoserFrame       = Frame(        self.cageFrame)
         self.colorChoserLabel       = Label(        self.colorChoserFrame, text='Line Color:')
-        self.colorCanvas            = Canvas(       self.colorChoserFrame, height=20, background='#%02x%02x%02x' % self.lineColor)
+        self.colorCanvas            = Canvas(       self.colorChoserFrame, height=25, background='#%02x%02x%02x' % self.lineColor, cursor='hand2', highlightbackground='gray30', highlightthickness=3)
         self.colorCanvas.bind('<Button-1>', self.change_line_color)
 
     def change_line_color(self, event=None):
@@ -109,14 +112,16 @@ class ScreenLinesFilter():
         self.lineThicknessSpinbox.grid( column=1, row=2, sticky='w')
         self.lineBlurLabel.grid(        column=0, row=3, sticky='we', pady=3)
         self.lineBlurSpinbox.grid(      column=1, row=3, sticky='w')
-        self.blendmodeLabel.grid(       column=0, row=4, sticky='we', pady=3)
-        self.blendmodeOptionmenu.grid(  column=0, row=5, sticky='e')
 
-        self.checkbuttonFrame.grid(     column=0, row=1, sticky='we')
+        self.blendmodeFrame.grid(       column=0, row=4, sticky='w', columnspan=2)
+        self.blendmodeLabel.grid(       column=0, row=0, sticky='w', pady=6)
+        self.blendmodeOptionmenu.grid(  column=1, row=0, sticky='w')
+
+        self.checkbuttonFrame.grid(     column=0, row=5, sticky='we')
         self.checkbuttonFrame.columnconfigure(0, weight=1)
         self.randomCheckbutton.grid(    column=0, row=0, sticky='w', pady=5)
 
-        self.colorChoserFrame.grid(     column=0, row=2, sticky='we')
+        self.colorChoserFrame.grid(     column=0, row=6, sticky='we')
         self.colorChoserFrame.columnconfigure(0, weight=1)
         self.colorChoserLabel.grid(     column=0, row=0, sticky='we', pady=3)
         self.colorCanvas.grid(          column=0, row=1, sticky='we')
@@ -154,7 +159,7 @@ class ScreenLinesFilter():
             except:
                 lineCount       = int((height / 1)) +2
 
-            lineColor       = self.lineColor#[0]
+            lineColor       = self.lineColor
             lineColorScale  = 1.0
 
             for x in range(lineCount):
@@ -170,29 +175,29 @@ class ScreenLinesFilter():
 
             #try:
             maskImage   = np.array(maskImage)   #Convert Pillow Image to numpy array,
-            sourceImage = np.array(sourceImage)      # for usage in blend_modes module
+            sourceImage = np.array(sourceImage)    # for usage in blend_modes module
             maskImage   = maskImage.astype(float)
             sourceImage = sourceImage.astype(float)
 
             if self.blendmode.get() == 'Soft Light':
                 sourceImage = soft_light(sourceImage, maskImage, 1.0)
 
-            if self.blendmode.get() == 'Lighten Only':
+            elif self.blendmode.get() == 'Lighten Only':
                 sourceImage = lighten_only(sourceImage, maskImage, 1.0)
 
-            if self.blendmode.get() == 'Addition':
+            elif self.blendmode.get() == 'Addition':
                 sourceImage = addition(sourceImage, maskImage, 1.0)
 
-            if self.blendmode.get() == 'Darken Only':
+            elif self.blendmode.get() == 'Darken Only':
                 sourceImage = darken_only(sourceImage, maskImage, 1.0)
 
-            if self.blendmode.get() == 'Subtract':
+            elif self.blendmode.get() == 'Subtract':
                 sourceImage = subtract(sourceImage, maskImage, 1.0)
 
-            if self.blendmode.get() == 'Grain Merge':
+            elif self.blendmode.get() == 'Grain Merge':
                 sourceImage = grain_merge(sourceImage, maskImage, 1.0)
 
-            if self.blendmode.get() == 'Divide':
+            elif self.blendmode.get() == 'Divide':
                 sourceImage = divide(sourceImage, maskImage, 1.0)
             #except MemoryError:
             #    glitchLogger.exception('Memory Error with ScreenFilter!')
@@ -201,5 +206,7 @@ class ScreenLinesFilter():
             image = np.uint8(sourceImage)
             image = Image.fromarray(image)
             image = image.convert('RGB')
+
+            print(self.name, ': finished')
 
         return image

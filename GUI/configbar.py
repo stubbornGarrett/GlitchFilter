@@ -21,8 +21,8 @@ class Configbar(ttk.Frame):
         self.filterListObj = []
         self.init_widgets()
 
-        self.filterListbox.bind(        '<<ListboxSelect>>',                self.update_filter_selection)
-        self.configTab.bind(            '<Configure>',          lambda e:   self.filterConfigCanvas.itemconfig(self.filterConfigCanvasWindow, width=self.configTab.winfo_width()))
+        self.filterListbox.bind('<<ListboxSelect>>',           self.update_filter_selection)
+        self.configTab.bind(    '<Configure>',       lambda e: self.filterConfigCanvas.itemconfig(self.filterConfigCanvasWindow, width=self.configTab.winfo_width()))
 
     def init_widgets(self):
         self.configbarNotebook  = ttk.Notebook(self)
@@ -30,8 +30,9 @@ class Configbar(ttk.Frame):
 
         #Confgig Tab ****************************************************************************
         self.configTab          = ttk.Frame(self.configbarNotebook)
-        
-        self.configTab.rowconfigure(1, pad=10)
+
+        self.configTab.rowconfigure(0, pad=10)
+        #self.configTab.rowconfigure(1)
         self.configTab.rowconfigure(2, weight=1)
         self.configTab.rowconfigure(3)#, pad=10)
         self.configTab.columnconfigure(0, weight=1)
@@ -42,7 +43,7 @@ class Configbar(ttk.Frame):
         self.topConfigFrame.columnconfigure( 0, weight=1)
         self.filterListScrollbar= ttk.Scrollbar(self.topConfigFrame, orient=tk.VERTICAL)
         self.filterListScrollbar.grid(  column=1, row=0, sticky=tk.N+tk.S, pady=2)
-        self.filterListbox      = tk.Listbox(self.topConfigFrame, activestyle='underline', listvariable=self.mainWindow.filterListVar, height=4, yscrollcommand=self.filterListScrollbar)
+        self.filterListbox      = tk.Listbox(self.topConfigFrame, listvariable=self.mainWindow.filterListVar, activestyle='none', height=4, yscrollcommand=self.filterListScrollbar)
         try:
             self.filterListbox.config(selectbackground=self.mainWindow.highlightsColor, font='({},{})'.format(self.mainWindow.defaultFont, self.mainWindow.defaultFontSize))
         except:
@@ -52,7 +53,7 @@ class Configbar(ttk.Frame):
         self.filterListScrollbar['command'] = self.filterListbox.yview
 
         self.firstSeperator     = ttk.Separator(self.configTab)
-        self.firstSeperator.grid(       column=0, row=1, sticky=tk.W+tk.E, pady=5)
+        self.firstSeperator.grid(       column=0, row=1, sticky=tk.W+tk.E)#, pady=5)
 
         #Filter Config
         self.filterConfigCanvas     = tk.Canvas(self.configTab, bd=0, highlightthickness=0)
@@ -66,10 +67,7 @@ class Configbar(ttk.Frame):
         except:
             pass
         self.filterConfigFrame      = ttk.Frame(self.filterConfigCanvas, relief='sunken', borderwidth=5, pad=3)
-        #self.filterConfigFrame.grid(    column=0, row=0, sticky=tk.W+tk.E+tk.N+tk.S, padx=5)
         self.filterConfigCanvasWindow = self.filterConfigCanvas.create_window(0,0, anchor='nw', window=self.filterConfigFrame)
-
-
 
         #Prepare Filters*****************************************************************
         # RGB Offset 
@@ -96,9 +94,7 @@ class Configbar(ttk.Frame):
 
         self.mainWindow.filterListVar.set(self.mainWindow.filterListStr)
 
-        #self.filterConfigScrollbar.grid(column=1, row=2, sticky='nes')
         self.filterConfigFrame.update_idletasks()
-        #self.filterConfigCanvas.update_idletasks()
         self.filterConfigCanvas.configure(scrollregion=self.filterConfigCanvas.bbox('all'), height=self.filterConfigFrame.winfo_height())
 
         #Active Filter Tab ****************************************************************
@@ -124,10 +120,16 @@ class Configbar(ttk.Frame):
         self.bottomConfigFrame.rowconfigure(    0, weight=1, pad=5)
         self.bottomConfigFrame.rowconfigure(    1, weight=1, pad=5)
 
-        self.applyButton        = ttk.Button(       self.bottomConfigFrame, text='Apply Changes',              underline=0, command=self.apply_filter).grid(                                                column=0, row=0, sticky=tk.W+tk.E, padx=5)
-        self.randomButton       = ttk.Button(       self.bottomConfigFrame, text='Random Render',              underline=0, command=self.apply_filter_random).grid(                                         column=1, row=0, sticky=tk.W+tk.E, padx=5)
-        self.showRenderButton   = ttk.Button(       self.bottomConfigFrame, text='Preview full sized Image',   underline=8, command=self.preview_image).grid(                                               column=0, row=1, sticky=tk.W+tk.E, padx=5, columnspan=2)
-        self.previewCheckbutton = ttk.Checkbutton(  self.bottomConfigFrame, text='Preview', variable=self.mainWindow.previewActiveVar, command=self.mainWindow.imagepreviewWidget.adjust_canvas_size).grid( column=0, row=2, sticky=tk.W,      padx=3)
+        self.applyButton        = ttk.Button(       self.bottomConfigFrame, text='Apply Changes',              underline=0, command=self.apply_filter)
+        self.applyButton.grid(                                                column=0, row=0, sticky='news'   , padx=5, pady=2, rowspan=2)
+        self.randomButton       = ttk.Button(       self.bottomConfigFrame, text='Random Render',              underline=0, command=self.apply_filter_random)
+        self.randomButton.grid(                                         column=1, row=0, sticky=tk.W+tk.E, padx=5)
+        self.showRenderButton   = ttk.Button(       self.bottomConfigFrame, text='Preview full sized Image',   underline=8, command=self.preview_image)
+        self.showRenderButton.grid(                                               column=1, row=1, sticky=tk.W+tk.E, padx=5)
+        self.previewCheckbutton = ttk.Checkbutton(  self.bottomConfigFrame, text='Preview', variable=self.mainWindow.previewActiveVar, command=self.mainWindow.imagepreviewWidget.display_image)
+        self.previewCheckbutton.grid( column=0, row=2, sticky=tk.W,      padx=3)
+        self.resetPreviewButton = ttk.Button(       self.bottomConfigFrame, text='Reset Preview (Ctrl+X)',                  command=self.mainWindow.imagepreviewWidget.reset_preview_values)
+        self.resetPreviewButton.grid(                                               column=1, row=2, sticky=tk.W+tk.E, padx=5)
 
     def apply_filter_random(self, event=None):
         if self.mainWindow.firstImageLoaded:
@@ -137,10 +139,9 @@ class Configbar(ttk.Frame):
                 filter.random_values()
                 filter.update_widgets_config()
                 image = filter.applyFilter(image)
-            if image != None:
-                self.mainWindow.tempImage = copy(image)
-                del image
-                self.mainWindow.imagepreviewWidget.display_image(self.mainWindow.imagepreviewWidget.select_active_image())
+            self.mainWindow.tempImage = copy(image)
+            del image
+            self.mainWindow.imagepreviewWidget.display_image(self.mainWindow.imagepreviewWidget.select_active_image())
             self.enable_configbar()
 
     def apply_filter(self, event=None):
@@ -149,17 +150,15 @@ class Configbar(ttk.Frame):
             image = copy(self.mainWindow.sourceImage)
             for filter in self.filterListObj:
                 image = filter.applyFilter(image)
-            if image != None:
-                self.mainWindow.tempImage = copy(image)
-                del image
-                #self.mainWindow.tempImageThumbnail = self.mainWindow.menubar.create_thumbnail(self.mainWindow.tempImage)
-                self.mainWindow.imagepreviewWidget.display_image(self.mainWindow.imagepreviewWidget.select_active_image())
+            self.mainWindow.tempImage = copy(image)
+            del image
+            self.mainWindow.imagepreviewWidget.display_image(self.mainWindow.imagepreviewWidget.select_active_image())
             self.enable_configbar()
 
     def update_filter_selection(self, event):
         #Get Name of the selected Filter as a String
-        selection = self.mainWindow.filterListStr[int(' '.join(map(str, self.filterListbox.curselection())))]
-        
+        selection = self.mainWindow.filterListStr[int(' '.join(map(str, self.filterListbox.curselection())))] #self.filterListbox.selection_get()
+
         for child in self.filterConfigFrame.winfo_children():
             child.grid_forget()
 
@@ -180,10 +179,45 @@ class Configbar(ttk.Frame):
         self.filterConfigCanvas.configure(scrollregion=self.filterConfigCanvas.bbox('all'), height=self.filterConfigFrame.winfo_height())
 
     def preview_image(self, event=None):
-        try:
-            self.mainWindow.tempImage.show()
-        except:
-            pass
+        if self.mainWindow.firstImageLoaded:
+            try:
+                self.mainWindow.tempImage.show()
+            except:
+                # ERROR
+                pass
+
+    # def disable_configbar(self, state='disabled'):
+    #     self.inProgress = True
+    #     self.filterListbox.config(state=state)
+    #     #self.filterListScrollbar.config(state=state)
+    #     self.applyButton.config(state=state)
+    #     self.randomButton.config(state=state)
+    #     self.showRenderButton.config(state=state)
+    #     self.previewCheckbutton.config(state=state)
+    #     self.resetPreviewButton.config(state=state)
+
+    #     print(int(self.filterListbox.curselection()[1]))
+
+    #     if state == 'normal' and self.filterListObj[int(self.filterListbox.curselection()[0])].activeState == 1:
+    #         for child in self.filterListObj[self.filterListbox.curselection()].cageFrame.winfo_children():
+    #             try:
+    #                 child.configure(state='normal')
+    #             except:
+    #                 pass
+
+    #     elif state == 'disable':
+    #         for child in self.filterListObj[int(self.filterListbox.curselection()[0])].cageFrame.winfo_children():
+    #             try:
+    #                 child.configure(state='disable')
+    #             except:
+    #                 pass
+
+    #     self.mainWindow.master.update_idletasks()
+
+    def enable_configbar(self):
+        self.disable_configbar('normal')
+        self.inProgress = False
+
 
     def disable_configbar(self, state='disabled'):
         self.inProgress = True
@@ -197,9 +231,3 @@ class Configbar(ttk.Frame):
                     changeState(child)
         changeState(self)
         self.mainWindow.master.update_idletasks()
-
-    def enable_configbar(self):
-        self.disable_configbar('normal')
-
- #   def check_mouse_inside_widget(self, event, widget):
- #       mouseX = self.mainWindow.master.winfo_pointerx

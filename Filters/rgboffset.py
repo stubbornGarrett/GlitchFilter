@@ -53,15 +53,15 @@ class RGBoffsetFilter():
         self.BlueYlabel     = Label(self.topFrame, text='Blue Y\t(px)')
         self.BlueYentry     = Entry(self.topFrame, textvariable=self.BlueYvar,  justify='right', width=6)
 
-        #try:
-        self.RedXentry.config(  font=self.master.mainWindow.defaultFont)
-        self.GreenXentry.config(font=self.master.mainWindow.defaultFont)
-        self.BlueXentry.config( font=self.master.mainWindow.defaultFont)
-        self.RedYentry.config(  font=self.master.mainWindow.defaultFont)
-        self.GreenYentry.config(font=self.master.mainWindow.defaultFont)
-        self.BlueYentry.config( font=self.master.mainWindow.defaultFont)
-        #except:
-        #    pass
+        try:
+            self.RedXentry.config(  font=self.master.mainWindow.defaultFont)
+            self.GreenXentry.config(font=self.master.mainWindow.defaultFont)
+            self.BlueXentry.config( font=self.master.mainWindow.defaultFont)
+            self.RedYentry.config(  font=self.master.mainWindow.defaultFont)
+            self.GreenYentry.config(font=self.master.mainWindow.defaultFont)
+            self.BlueYentry.config( font=self.master.mainWindow.defaultFont)
+        except:
+            pass
 
         self.frameSeperator = Separator(self.cageFrame)
        

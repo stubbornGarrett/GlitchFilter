@@ -19,6 +19,7 @@ class GlitchFilter(ttk.Frame):
             self.create_config()
         self.read_config('./settings.ini')
 
+        self.defaultFontSize = 11
         self.create_and_apply_theme()
 
         self.master.geometry('{}x{}+{}+{}'.format(self.config.get('MainWindow', 'minWidth'), self.config.get('MainWindow', 'minHeight'), self.config.get('MainWindow', 'xStartPos'), self.config.get('MainWindow', 'yStartPos')))
@@ -46,12 +47,13 @@ class GlitchFilter(ttk.Frame):
         }
 
         writeConfig['Style'] = {
-            'backgroundColor': '#333333',
-            'lightBackgroundColor': '#555555',
-            'fontColor': '#eeeeee',
-            'highlightsColor': '#00aaaa',
-            'disableColor': '#555555',
-            'disableFontColor': '#999999',
+            'backgroundColor': '#212121',
+            'lightBackgroundColor': '#424242',
+            'fontColor': '#E0E0E0',
+            'highlightsColor': '#4DD0E1',
+            'darkHighlightsColor': '#E040FB',
+            'disableColor': '#757575',
+            'disableFontColor': '#9E9E9E',
 
             'defaultFont': '"Calibri"',
             'defaultFontSize':  '12'
@@ -69,6 +71,7 @@ class GlitchFilter(ttk.Frame):
         self.lightBackgroundColor  = self.config.get('Style', 'lightBackgroundColor')    #Background
         self.fontColor        = self.config.get('Style', 'fontColor')          #Font
         self.highlightsColor  = self.config.get('Style', 'highlightsColor')    #Highlights (e.g. hovering a button)
+        self.darkHighlightsColor= self.config.get('Style', 'darkHighlightsColor')    #Highlights (e.g. hovering a button)
         self.disableColor     = self.config.get('Style', 'disableColor')
         self.disableFontColor = self.config.get('Style', 'disableFontColor')
         self.defaultFont      = self.config.get('Style', 'defaultFont')
@@ -77,7 +80,7 @@ class GlitchFilter(ttk.Frame):
         font = '({},{})'.format(self.defaultFont, self.defaultFontSize)
 
         self.style = styleconfig.GlitchStyle()
-        self.style.create_theme('GlitchTheme', self.backgroundColor, self.lightBackgroundColor, self.fontColor, self.highlightsColor, self.disableColor, self.disableFontColor, font)
+        self.style.create_theme('GlitchTheme', self.backgroundColor, self.lightBackgroundColor, self.fontColor, self.highlightsColor, self.darkHighlightsColor, self.disableColor, self.disableFontColor, font)
         self.style.theme_use('GlitchTheme')
 
     def create_variables(self):

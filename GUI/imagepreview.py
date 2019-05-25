@@ -34,10 +34,6 @@ class Imagepreview(ttk.Frame):
     def adjust_canvas_size(self, event=None):
         self.previewCanvas.config(width=self.winfo_width(), height=self.winfo_height())
         if self.mainWindow.firstImageLoaded:
-            if self.mainWindow.sourceImage.height/self.previewCanvas.winfo_height() > self.mainWindow.sourceImage.width/self.previewCanvas.winfo_width():
-                self.canvasScale = self.previewCanvas.winfo_height() / self.previewImage.height
-            else:
-                self.canvasScale = self.previewCanvas.winfo_width() / self.previewImage.width
             self.display_image(self.select_active_image())
 
     def scroll_start(self, event):
@@ -45,7 +41,18 @@ class Imagepreview(ttk.Frame):
 
     def scroll_move(self, event):
         self.previewCanvas.scan_dragto(event.x, event.y, gain=1)
-        self.display_image(self.select_active_image())
+        scaleWidth, scaleHeight = int(self.mainWindow.sourceImage.width*(self.canvasScale)), int(self.mainWindow.sourceImage.height*(self.canvasScale))
+        z = int((self.previewCanvas.winfo_width()-scaleWidth)/2)+1
+        w = int((self.previewCanvas.winfo_height()-scaleHeight)/2)+1
+        if self.previewCanvas.canvasx(0) > z:
+            self.display_image(self.select_active_image())
+        elif scaleWidth+z-(self.previewCanvas.canvasx(0)) > self.previewCanvas.winfo_width():
+            self.display_image(self.select_active_image())
+        elif self.previewCanvas.canvasy(0) > w:
+            self.display_image(self.select_active_image())
+        elif scaleHeight+w-(self.previewCanvas.canvasy(0)) > self.previewCanvas.winfo_height():
+            self.display_image(self.select_active_image())
+        #self.display_image(self.select_active_image())
 
     def zoom(self, event):
         if event.delta >= 0 and self.canvasScale < 3:
@@ -54,46 +61,38 @@ class Imagepreview(ttk.Frame):
             self.canvasScale *= 1/1.2
         self.display_image(self.select_active_image(), event.x, event.y)
 
-    def display_image(self, image, x=0, y=0):
-        if self.previewImage_ID:
-            self.previewCanvas.delete(self.previewImage_ID)
+    def display_image(self, image=None, x=0, y=0):
+        if self.mainWindow.firstImageLoaded:
+            #x = x + self.previewCanvas.winfo_width()/2
+            #y = y + self.previewCanvas.winfo_height()/2
+            if image == None:
+                image = self.select_active_image()
+            if self.previewImage_ID:
+                self.previewCanvas.delete(self.previewImage_ID)
 
-        scaleWidth, scaleHeight = int(image.width*(self.canvasScale)), int(image.height*(self.canvasScale))
-        size    = scaleWidth, scaleHeight
-        image   = image.resize(size, resample=Image.NEAREST)#, resample=Image.LANCZOS)
+            scaleWidth, scaleHeight = int(image.width*(self.canvasScale)), int(image.height*(self.canvasScale))
+            size    = scaleWidth, scaleHeight
+            image   = image.resize(size, resample=Image.NEAREST)#, resample=Image.LANCZOS)
 
-        z = int((self.previewCanvas.winfo_width()-scaleWidth)/2)+1
-        y = int((self.previewCanvas.winfo_height()-scaleHeight)/2)+1
+            z = int((self.previewCanvas.winfo_width()-scaleWidth)/2)+1
+            w = int((self.previewCanvas.winfo_height()-scaleHeight)/2)+1
 
-        if self.previewCanvas.canvasx(0) > z:
-            leftEdge = self.previewCanvas.canvasx(0) - z
-        else:
-            leftEdge = 0
+            leftEdge    = self.previewCanvas.canvasx(0)-z               if self.previewCanvas.canvasx(0)                 > z                                    else 0
 
-        if scaleWidth+z-(self.previewCanvas.canvasx(0)) > self.previewCanvas.winfo_width():
-            rightEdge = scaleWidth+(z+self.previewCanvas.canvasx(0))
-        else:
-            rightEdge = image.width
+            rightEdge   = scaleWidth+(z+self.previewCanvas.canvasx(0))  if scaleWidth+z-(self.previewCanvas.canvasx(0))  > self.previewCanvas.winfo_width()     else image.width
 
-        if self.previewCanvas.canvasy(0) > y:
-            topEdge = self.previewCanvas.canvasy(0) - y
-        else:
-            topEdge = 0
-        
-        if scaleHeight+y-(self.previewCanvas.canvasy(0)) > self.previewCanvas.winfo_height():
-            bottomEdge = scaleHeight+(y+self.previewCanvas.canvasy(0))
-        else:
-            bottomEdge = image.height
+            topEdge     = self.previewCanvas.canvasy(0)-w               if self.previewCanvas.canvasy(0)                 > w                                    else 0
+            
+            bottomEdge  = scaleHeight+(w+self.previewCanvas.canvasy(0)) if scaleHeight+w-(self.previewCanvas.canvasy(0)) > self.previewCanvas.winfo_height()    else image.height
 
-        image = image.crop((leftEdge, topEdge, rightEdge, bottomEdge))
-        image.save('./pic/pic1.jpg')
+            image = image.crop((leftEdge, topEdge, rightEdge, bottomEdge))
 
-        # draw
-        x = self.previewCanvas.winfo_width() / 2 + (leftEdge + rightEdge  - scaleWidth)  /2
-        y = self.previewCanvas.winfo_height()/ 2 + (topEdge  + bottomEdge - scaleHeight) /2
-        self.mainWindow.previewImage = ImageTk.PhotoImage(image)
-        self.previewImage_ID            = self.previewCanvas.create_image(x, y, image=self.mainWindow.previewImage)
-        self.previewCanvas.scale(tk.ALL, x, y,self.canvasScale, self.canvasScale)
+            # draw
+            x = self.previewCanvas.winfo_width() / 2 + (leftEdge + rightEdge  - scaleWidth)  /2
+            y = self.previewCanvas.winfo_height()/ 2 + (topEdge  + bottomEdge - scaleHeight) /2
+            self.mainWindow.previewImage = ImageTk.PhotoImage(image)
+            self.previewImage_ID            = self.previewCanvas.create_image(x, y, image=self.mainWindow.previewImage)
+            self.previewCanvas.scale(tk.ALL, x, y,self.canvasScale, self.canvasScale)
 
 
     def reset_preview_values(self, event=None):

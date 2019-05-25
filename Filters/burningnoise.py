@@ -54,31 +54,32 @@ class BurningNoiseFilter():
 
         self.pixelSizeLabel          = Label(         self.topFrame, text='Pixel Size\t(px)')
         self.pixelSizeSpinbox        = Spinbox(       self.topFrame, from_=0, to_=255, textvariable=self.pixelSizeVar, justify='right', width=6)
+        self.blurLabel               = Label(         self.topFrame, text='Blur\t(px)')
+        self.blurSpinbox             = Spinbox(       self.topFrame, from_=0, to_=9999, textvariable=self.blurVar, justify='right', width=6)
         self.stretchWidthLabel       = Label(         self.topFrame, text='Stretch X\t(%)')
         self.stretchWidthSpinbox     = Spinbox(       self.topFrame, from_=0, to_=100, textvariable=self.stretchWidthVar, command=self.update_widgets_config,   justify='right', width=6)
         self.stretchWidthScale       = Scale(         self.topFrame, from_=0, to_=100, variable=self.stretchWidthVar, orient='horizontal', command=self.update_widgets_config)
         self.stretchHeightLabel      = Label(         self.topFrame, text='Stretch Y\t(%)')
         self.stretchHeightSpinbox    = Spinbox(       self.topFrame, from_=0, to_=100, textvariable=self.stretchHeightVar, command=self.update_widgets_config,  justify='right', width=6)
         self.stretchHeightScale      = Scale(         self.topFrame, from_=0, to_=100, variable=self.stretchHeightVar, orient='horizontal', command=self.update_widgets_config)
-        
-        self.firstSeparator          = Separator(     self.topFrame)
-        
-        self.darkBrightLabel         = Label(         self.topFrame, text='Value (0-255)')
-        self.darkSpinbox             = Spinbox(       self.topFrame, from_=0, to_=255, textvariable=self.darkVar, command=self.update_widgets_config,   justify='right', width=6)
-        self.darkScale               = Scale(         self.topFrame, from_=0, to_=255, variable=self.darkVar, orient='horizontal', command=self.update_widgets_config)
-        self.brightSpinbox           = Spinbox(       self.topFrame, from_=1, to_=255, textvariable=self.brightVar, command=self.update_widgets_config, justify='right', width=6)
-        self.brightScale             = Scale(         self.topFrame, from_=0, to_=255, variable=self.brightVar, orient='horizontal', command=self.update_widgets_config)
-        
-        self.secondSeparator         = Separator(     self.topFrame)
-        
+
         self.contrastLabel           = Label(         self.topFrame, text='Contrast\t(%)')
         self.contrastSpinbox         = Spinbox(       self.topFrame, from_=-50, to_=50, textvariable=self.contrastVar, command=self.update_widgets_config,   justify='right', width=6)
         self.contrastScale           = Scale(         self.topFrame, from_=-50, to_=50, variable=self.contrastVar, orient='horizontal', command=self.update_widgets_config)
-        self.intensityLabel          = Label(         self.topFrame, text='Intensity\t(%)')
+
+        self.firstSeparator          = Separator(     self.topFrame)
+        
+        self.darkBrightLabel         = Label(         self.topFrame, text='Grain lightnes (Min / Max)')
+        self.darkSpinbox             = Spinbox(       self.topFrame, from_=0, to_=255, textvariable=self.darkVar, command=self.update_widgets_config,   justify='right', width=6)
+        self.darkScale               = Scale(         self.topFrame, from_=0, to_=255, variable=self.darkVar, orient='horizontal', command=self.update_widgets_config)
+        self.brightSpinbox           = Spinbox(       self.topFrame, from_=1, to_=255, textvariable=self.brightVar, command=self.update_widgets_config, justify='right', width=6)
+        self.brightScale             = Scale(         self.topFrame, from_=1, to_=255, variable=self.brightVar, orient='horizontal', command=self.update_widgets_config)
+        
+        self.secondSeparator         = Separator(     self.topFrame)
+
+        self.intensityLabel          = Label(         self.topFrame, text='Visibility\t(%)') # Intensity
         self.intensitySpinbox        = Spinbox(       self.topFrame, from_=0, to_=100, textvariable=self.intensityVar, command=self.update_widgets_config,  justify='right', width=6)
         self.intensityScale          = Scale(         self.topFrame, from_=0, to_=100, variable=self.intensityVar, orient='horizontal', command=self.update_widgets_config)
-        self.blurLabel               = Label(         self.topFrame, text='Blur\t(px)')
-        self.blurSpinbox             = Spinbox(       self.topFrame, from_=0, to_=9999, textvariable=self.blurVar, justify='right', width=6)
         
         self.checkbuttonFrame        = Frame(         self.topFrame)
         self.invertCheckbutton       = Checkbutton(   self.checkbuttonFrame, text='Invert', variable=self.invertState)  
@@ -103,7 +104,6 @@ class BurningNoiseFilter():
             pass
 
     def display_widgets(self):
-        print('dip')
         self.cageFrame.grid(column=0, row=0, sticky='we', padx=3)
         self.cageFrame.columnconfigure(0, weight=1)
         self.cageFrame.columnconfigure(1, weight=0)
@@ -116,31 +116,32 @@ class BurningNoiseFilter():
 
         self.pixelSizeLabel.grid(       column=0, row=0, sticky='we', pady=3)
         self.pixelSizeSpinbox.grid(     column=1, row=0, sticky='w')
-        self.stretchWidthLabel.grid(    column=0, row=1, sticky='we', pady=3)
-        self.stretchWidthSpinbox.grid(  column=1, row=1, sticky='w')
-        self.stretchWidthScale.grid(    column=0, row=2, sticky='we', columnspan=2)
-        self.stretchHeightLabel.grid(   column=0, row=3, sticky='we', pady=3)
-        self.stretchHeightSpinbox.grid( column=1, row=3, sticky='w')
-        self.stretchHeightScale.grid(   column=0, row=4, sticky='we', columnspan=2)
+        self.blurLabel.grid(            column=0, row=1, sticky='we', pady=3)
+        self.blurSpinbox.grid(          column=1, row=1, sticky='w')
+        self.stretchWidthLabel.grid(    column=0, row=2, sticky='we', pady=3)
+        self.stretchWidthSpinbox.grid(  column=1, row=2, sticky='w')
+        self.stretchWidthScale.grid(    column=0, row=3, sticky='we', columnspan=2)
+        self.stretchHeightLabel.grid(   column=0, row=4, sticky='we', pady=3)
+        self.stretchHeightSpinbox.grid( column=1, row=4, sticky='w')
+        self.stretchHeightScale.grid(   column=0, row=5, sticky='we', columnspan=2)
 
-        self.firstSeparator.grid(       column=0, row=5, sticky='we', columnspan=2, pady=10)
+        self.contrastLabel.grid(        column=0, row=6, sticky='we', pady=3)
+        self.contrastSpinbox.grid(      column=1, row=6, sticky='w')
+        self.contrastScale.grid(        column=0, row=7, sticky='we', columnspan=2)
+
+        self.firstSeparator.grid(       column=0, row=8, sticky='we', columnspan=2, pady=10)
         
-        self.darkBrightLabel.grid(      column=0, row=6, sticky='we', pady=3)
-        self.darkSpinbox.grid(          column=1, row=7, sticky='w')
-        self.darkScale.grid(            column=0, row=7, sticky='we')
-        self.brightSpinbox.grid(        column=1, row=8, sticky='w')
-        self.brightScale.grid(          column=0, row=8, sticky='we')
+        self.darkBrightLabel.grid(      column=0, row=9, sticky='we', pady=3, columnspan=2)
+        self.darkSpinbox.grid(          column=1, row=10, sticky='w', pady=3)
+        self.darkScale.grid(            column=0, row=10, sticky='we')
+        self.brightSpinbox.grid(        column=1, row=11, sticky='w', pady=3)
+        self.brightScale.grid(          column=0, row=11, sticky='we')
 
-        self.secondSeparator.grid(      column=0, row=9, sticky='we', columnspan=2, pady=10)
+        self.secondSeparator.grid(      column=0, row=12, sticky='we', columnspan=2, pady=10)
 
-        self.contrastLabel.grid(        column=0, row=10, sticky='we', pady=3)
-        self.contrastSpinbox.grid(      column=1, row=10, sticky='w')
-        self.contrastScale.grid(        column=0, row=11, sticky='we', columnspan=2)
-        self.intensityLabel.grid(       column=0, row=12, sticky='we', pady=3)
-        self.intensitySpinbox.grid(     column=1, row=12, sticky='w')
-        self.intensityScale.grid(       column=0, row=13, sticky='we', columnspan=2)
-        self.blurLabel.grid(            column=0, row=14, sticky='we', pady=3)
-        self.blurSpinbox.grid(          column=1, row=14, sticky='w')
+        self.intensityLabel.grid(       column=0, row=13, sticky='we', pady=3)
+        self.intensitySpinbox.grid(     column=1, row=13, sticky='w')
+        self.intensityScale.grid(       column=0, row=14, sticky='we', columnspan=2)
 
         self.checkbuttonFrame.grid(     column=0, row=15, sticky='we', columnspan=2)
         self.checkbuttonFrame.columnconfigure(0, weight=0)
@@ -165,7 +166,7 @@ class BurningNoiseFilter():
         if self.activeState.get():
             self.darkVar.set(   '%0.0f' % float(self.darkVar.get()))
             self.brightVar.set( '%0.0f' % float(self.brightVar.get()))
-            if self.darkVar.get() > self.brightVar.get():
+            if self.darkVar.get() >= self.brightVar.get():
                 self.darkVar.set(self.brightVar.get()-1)
 
             self.stretchWidthVar.set(   '%0.0f' % float(self.stretchWidthVar.get()))
@@ -176,6 +177,7 @@ class BurningNoiseFilter():
     def applyFilter(self, image):
         if self.activeState.get():
             print('Burning Noise Filter: started')
+            self.update_widgets_config()
             seed(self.seed.get())
             np.random.seed(self.seed.get())
             sourceImage = copy(image)
@@ -229,4 +231,4 @@ class BurningNoiseFilter():
             np.random.seed()
             del self.randomNoiseData[:]
             print('Burning Noise Filter: finished')
-            return image
+        return image

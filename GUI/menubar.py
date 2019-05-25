@@ -62,6 +62,10 @@ class Menubar(tk.Menu):
                 self.mainWindow.firstImageLoaded    = True
                 self.mainWindow.imagepreviewWidget.previewImage = copy(self.mainWindow.sourceImage)
                 self.mainWindow.imagepreviewWidget.reset_preview_values()
+                if self.mainWindow.sourceImage.height/self.mainWindow.imagepreviewWidget.previewCanvas.winfo_height() > self.mainWindow.sourceImage.width/self.mainWindow.imagepreviewWidget.previewCanvas.winfo_width():
+                    self.mainWindow.imagepreviewWidget.canvasScale = self.mainWindow.imagepreviewWidget.previewCanvas.winfo_height() / self.previewImage.height
+                else:
+                    self.mainWindow.imagepreviewWidget.canvasScale = self.mainWindow.imagepreviewWidget.previewCanvas.winfo_width() / self.previewImage.width
                 self.mainWindow.imagepreviewWidget.adjust_canvas_size()
 
                 for filter in self.mainWindow.configbarWidget.filterListObj:
