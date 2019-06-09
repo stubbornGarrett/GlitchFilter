@@ -49,9 +49,11 @@ class ScreenLinesFilter():
 
         self.topFrame               = Frame(        self.cageFrame)
 
-        self.lineDensityLabel       = Label(        self.topFrame, text='Density\t(%)')
-        self.lineDensitySpinbox     = Spinbox(      self.topFrame, from_=1, to_=99,     textvariable=   self.lineDensity,   justify='right',  width=6)
-        self.lineDensityScale       = Scale(        self.topFrame, from_=1, to_=99,     variable=       self.lineDensity,   orient='horizontal', command=lambda s:self.lineDensity.set('%0.0f' % float(s)))
+        self.lineDensityFrame       = Frame(        self.topFrame)
+        self.lineDensityLabel       = Label(        self.lineDensityFrame, text='Density\t(%)')
+        self.lineDensitySpinbox     = Spinbox(      self.lineDensityFrame, from_=1, to_=99,     textvariable=   self.lineDensity,   justify='right',  width=6)
+        self.lineDensityScale       = Scale(        self.lineDensityFrame, from_=1, to_=99,     variable=       self.lineDensity,   orient='horizontal', command=lambda s:self.lineDensity.set('%0.0f' % float(s)))
+        
         self.lineThicknessLabel     = Label(        self.topFrame, text='Thickness\t(px)')
         self.lineThicknessSpinbox   = Spinbox(      self.topFrame, from_=0, to_=9999,   textvariable=self.lineThickness,    justify='right', width=6)
         self.lineBlurLabel          = Label(        self.topFrame, text='Blur\t(px)')
@@ -103,23 +105,27 @@ class ScreenLinesFilter():
         self.topFrame.rowconfigure(2, weight=0)
         self.topFrame.rowconfigure(3, weight=1)
 
-        self.lineDensityLabel.grid(     column=0, row=0, sticky='we', pady=3)
+        self.lineDensityFrame.grid(     column=0, row=0, sticky='we', pady=3, columnspan=2)
+        self.lineDensityFrame.columnconfigure(0, weight=1)
+        self.lineDensityFrame.columnconfigure(1, weight=0)
+        self.lineDensityLabel.grid(     column=0, row=0, sticky='we')
         self.lineDensitySpinbox.grid(   column=1, row=0, sticky='w')
         self.lineDensityScale.grid(     column=0, row=1, sticky='we', columnspan=2)
-        self.lineThicknessLabel.grid(   column=0, row=2, sticky='we', pady=3)
-        self.lineThicknessSpinbox.grid( column=1, row=2, sticky='w')
-        self.lineBlurLabel.grid(        column=0, row=3, sticky='we', pady=3)
-        self.lineBlurSpinbox.grid(      column=1, row=3, sticky='w')
 
-        self.blendmodeFrame.grid(       column=0, row=4, sticky='w', columnspan=2)
+        self.lineThicknessLabel.grid(   column=0, row=1, sticky='we', pady=3)
+        self.lineThicknessSpinbox.grid( column=1, row=1, sticky='w')
+        self.lineBlurLabel.grid(        column=0, row=2, sticky='we', pady=3)
+        self.lineBlurSpinbox.grid(      column=1, row=2, sticky='w')
+
+        self.blendmodeFrame.grid(       column=0, row=3, sticky='w', columnspan=2)
         self.blendmodeLabel.grid(       column=0, row=0, sticky='w', pady=6)
         self.blendmodeOptionmenu.grid(  column=1, row=0, sticky='w')
 
-        self.checkbuttonFrame.grid(     column=0, row=5, sticky='we')
+        self.checkbuttonFrame.grid(     column=0, row=4, sticky='we')
         self.checkbuttonFrame.columnconfigure(0, weight=1)
         self.randomCheckbutton.grid(    column=0, row=0, sticky='w', pady=5)
 
-        self.colorChoserFrame.grid(     column=0, row=6, sticky='we')
+        self.colorChoserFrame.grid(     column=0, row=5, sticky='we')
         self.colorChoserFrame.columnconfigure(0, weight=1)
         self.colorChoserLabel.grid(     column=0, row=0, sticky='we', pady=3)
         self.colorCanvas.grid(          column=0, row=1, sticky='we')

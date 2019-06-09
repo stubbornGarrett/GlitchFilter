@@ -41,9 +41,11 @@ class BigBlocksFilter():
         self.blockCountSpinbox          = Spinbox(  self.topFrame, from_=0, to_=30, textvariable=self.blockCountVar,        justify='right', width=6, command=self.update_widgets_config)#, command=self.update_parameters)
         self.blockMaxHeightLabel        = Label(    self.topFrame, text='Max Block Height (px)', anchor='w')
         self.blockMaxHeightSpinbox      = Spinbox(  self.topFrame, from_=0, to_=1,  textvariable=self.blockMaxHeightVar,    justify='right', width=6)#, command=self.update_widgets_config)#, command=self.update_parameters)
-        self.blockMaxOffsetLabel        = Label(    self.topFrame, text='Max Offset (%)', anchor='w')
-        self.blockMaxOffsetSpinbox      = Spinbox(  self.topFrame, from_=0, to_=100, textvariable=self.blockMaxOffsetVar,   justify='right', width=6)
-        self.blockMaxOffsetScale        = Scale(    self.topFrame, from_=0, to_=100, variable=self.blockMaxOffsetVar, orient='horizontal', command=lambda s:self.blockMaxOffsetVar.set('%0.0f' % float(s)))
+        
+        self.blockMaxOffsetFrame        = Frame(    self.topFrame)
+        self.blockMaxOffsetLabel        = Label(    self.blockMaxOffsetFrame, text='Max Offset (%)', anchor='w')
+        self.blockMaxOffsetSpinbox      = Spinbox(  self.blockMaxOffsetFrame, from_=0, to_=100, textvariable=self.blockMaxOffsetVar,   justify='right', width=6)
+        self.blockMaxOffsetScale        = Scale(    self.blockMaxOffsetFrame, from_=0, to_=100, variable=self.blockMaxOffsetVar, orient='horizontal', command=lambda s:self.blockMaxOffsetVar.set('%0.0f' % float(s)))
 
         self.seedFrame                  = Frame(    self.cageFrame)
         self.seedLabel                  = Label(    self.seedFrame, text='Seed (0 - 99999)', anchor='w')
@@ -75,11 +77,15 @@ class BigBlocksFilter():
         self.blockCountSpinbox.grid(    column=1, row=0, sticky='w')
         self.blockMaxHeightLabel.grid(  column=0, row=1, sticky='we', pady=3)
         self.blockMaxHeightSpinbox.grid(column=1, row=1, sticky='w')
-        self.blockMaxOffsetLabel.grid(  column=0, row=2, sticky='we')
-        self.blockMaxOffsetSpinbox.grid(column=1, row=2, sticky='w')
-        self.blockMaxOffsetScale.grid(  column=0, row=3, sticky='we', columnspan=2)
 
-        self.seedFrame.grid(            column=0, row=1, sticky='we', pady=10)
+        self.blockMaxOffsetFrame.grid(  column=0, row=2, sticky='we', pady=3, columnspan=2)
+        self.blockMaxOffsetFrame.columnconfigure(0, weight=1)
+        self.blockMaxOffsetFrame.columnconfigure(1, weight=0)
+        self.blockMaxOffsetLabel.grid(  column=0, row=0, sticky='we')
+        self.blockMaxOffsetSpinbox.grid(column=1, row=0, sticky='w')
+        self.blockMaxOffsetScale.grid(  column=0, row=1, sticky='we', columnspan=2)
+
+        self.seedFrame.grid(            column=0, row=3, sticky='we', pady=10)
         self.seedFrame.columnconfigure(0, weight=0)
         self.seedFrame.columnconfigure(1, weight=0)
         self.seedFrame.columnconfigure(2, weight=0)
@@ -88,7 +94,7 @@ class BigBlocksFilter():
         self.seedSpinbox.grid(          column=2, row=0, sticky='e')
 
     def random_values(self):
-        self.blockCountVar.set(randint(1, 7))
+        self.blockCountVar.set(randint(1, 3))
         self.seedVar.set(int(randint(0, 99999)))
         self.update_widgets_config()
 

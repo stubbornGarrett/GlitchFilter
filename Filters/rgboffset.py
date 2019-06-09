@@ -1,6 +1,6 @@
 from PIL import Image, ImageChops
 from tkinter import IntVar, StringVar
-from tkinter.ttk import Frame, Label, Button, Entry, Checkbutton, Separator
+from tkinter.ttk import Frame, Label, Button, Spinbox, Checkbutton, Separator
 from copy import copy
 from random import randint
 
@@ -40,26 +40,27 @@ class RGBoffsetFilter():
 
         self.topFrame       = Frame(self.cageFrame)
 
-        self.RedXlabel      = Label(self.topFrame, text='Red X\t(px)')
-        self.RedXentry      = Entry(self.topFrame, textvariable=self.RedXvar,   justify='right', width=6)
-        self.GreenXlabel    = Label(self.topFrame, text='Green X\t(px)')
-        self.GreenXentry    = Entry(self.topFrame, textvariable=self.GreenXvar, justify='right', width=6)
-        self.BlueXlabel     = Label(self.topFrame, text='Blue X\t(px)')
-        self.BlueXentry     = Entry(self.topFrame, textvariable=self.BlueXvar,  justify='right', width=6)
-        self.RedYlabel      = Label(self.topFrame, text='Red Y\t(px)')
-        self.RedYentry      = Entry(self.topFrame, textvariable=self.RedYvar,   justify='right', width=6)
-        self.GreenYlabel    = Label(self.topFrame, text='Green Y\t(px)')
-        self.GreenYentry    = Entry(self.topFrame, textvariable=self.GreenYvar, justify='right', width=6)
-        self.BlueYlabel     = Label(self.topFrame, text='Blue Y\t(px)')
-        self.BlueYentry     = Entry(self.topFrame, textvariable=self.BlueYvar,  justify='right', width=6)
+        validation = (self.master.master.master.register(self.validate_input), '%S', '%P')
+        self.RedXlabel      = Label(    self.topFrame, text='Red X\t(px)')
+        self.RedXspinbox    = Spinbox(  self.topFrame, textvariable=self.RedXvar,   justify='right', width=6, from_=-1920, to_=1920, validate='key', validatecomman=validation)
+        self.GreenXlabel    = Label(    self.topFrame, text='Green X\t(px)')
+        self.GreenXspinbox  = Spinbox(  self.topFrame, textvariable=self.GreenXvar, justify='right', width=6, from_=-1920, to_=1920)
+        self.BlueXlabel     = Label(    self.topFrame, text='Blue X\t(px)')
+        self.BlueXspinbox   = Spinbox(  self.topFrame, textvariable=self.BlueXvar,  justify='right', width=6, from_=-1920, to_=1920)
+        self.RedYlabel      = Label(    self.topFrame, text='Red Y\t(px)')
+        self.RedYspinbox    = Spinbox(  self.topFrame, textvariable=self.RedYvar,   justify='right', width=6, from_=-1920, to_=1920)
+        self.GreenYlabel    = Label(    self.topFrame, text='Green Y\t(px)')
+        self.GreenYspinbox  = Spinbox(  self.topFrame, textvariable=self.GreenYvar, justify='right', width=6, from_=-1920, to_=1920)
+        self.BlueYlabel     = Label(    self.topFrame, text='Blue Y\t(px)')
+        self.BlueYspinbox   = Spinbox(  self.topFrame, textvariable=self.BlueYvar,  justify='right', width=6, from_=-1920, to_=1920)
 
         try:
-            self.RedXentry.config(  font=self.master.mainWindow.defaultFont)
-            self.GreenXentry.config(font=self.master.mainWindow.defaultFont)
-            self.BlueXentry.config( font=self.master.mainWindow.defaultFont)
-            self.RedYentry.config(  font=self.master.mainWindow.defaultFont)
-            self.GreenYentry.config(font=self.master.mainWindow.defaultFont)
-            self.BlueYentry.config( font=self.master.mainWindow.defaultFont)
+            self.RedXspinbox.config(  font=self.master.mainWindow.defaultFont)
+            self.GreenXspinbox.config(font=self.master.mainWindow.defaultFont)
+            self.BlueXspinbox.config( font=self.master.mainWindow.defaultFont)
+            self.RedYspinbox.config(  font=self.master.mainWindow.defaultFont)
+            self.GreenYspinbox.config(font=self.master.mainWindow.defaultFont)
+            self.BlueYspinbox.config( font=self.master.mainWindow.defaultFont)
         except:
             pass
 
@@ -86,17 +87,17 @@ class RGBoffsetFilter():
         self.topFrame.columnconfigure(1, weight=0)
 
         self.RedXlabel.grid(    column=0, row=0, sticky='we', pady=3)
-        self.RedXentry.grid(    column=1, row=0, sticky='w')
+        self.RedXspinbox.grid(  column=1, row=0, sticky='w')
         self.RedYlabel.grid(    column=0, row=1, sticky='we', pady=3)
-        self.RedYentry.grid(    column=1, row=1, sticky='w')
+        self.RedYspinbox.grid(  column=1, row=1, sticky='w')
         self.GreenXlabel.grid(  column=0, row=2, sticky='we', pady=3)
-        self.GreenXentry.grid(  column=1, row=2, sticky='w')
+        self.GreenXspinbox.grid(column=1, row=2, sticky='w')
         self.GreenYlabel.grid(  column=0, row=3, sticky='we', pady=3)
-        self.GreenYentry.grid(  column=1, row=3, sticky='w')
+        self.GreenYspinbox.grid(column=1, row=3, sticky='w')
         self.BlueXlabel.grid(   column=0, row=4, sticky='we', pady=3)
-        self.BlueXentry.grid(   column=1, row=4, sticky='w')
+        self.BlueXspinbox.grid( column=1, row=4, sticky='w')
         self.BlueYlabel.grid(   column=0, row=5, sticky='we', pady=3)
-        self.BlueYentry.grid(   column=1, row=5, sticky='w')
+        self.BlueYspinbox.grid( column=1, row=5, sticky='w')
         
         self.frameSeperator.grid(column=0, row=1, sticky='we')
 
@@ -132,6 +133,13 @@ class RGBoffsetFilter():
     def update_widgets_config(self, event=None):
         if self.activeState.get():
             pass
+
+    def validate_input(self, input, result):
+        print(result)
+        if input.isdigit() and self.master.mainWindow.sourceImage.height*2 > int(result):
+            return True
+        else:
+            return False
 
     def applyFilter(self, image):
         if self.activeState.get():

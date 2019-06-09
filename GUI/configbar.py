@@ -1,6 +1,9 @@
 from tools import logger
+import imageio
 import tkinter as tk
 import tkinter.ttk as ttk
+import numpy as np
+from PIL import Image
 from tkinter.messagebox import showerror
 from Filters import rgboffset, bigblocks, screenlines, burningnoise
 from copy import copy
@@ -17,6 +20,8 @@ class Configbar(ttk.Frame):
 
         self.filterListObj = []
         self.init_widgets()
+        self.filterListbox.select_set(0)
+        self.update_filter_selection(event=None)
 
         self.filterListbox.bind('<<ListboxSelect>>',           self.update_filter_selection)
         self.configTab.bind(    '<Configure>',       lambda e: self.filterConfigCanvas.itemconfig(self.filterConfigCanvasWindow, width=self.configTab.winfo_width()))
@@ -40,7 +45,7 @@ class Configbar(ttk.Frame):
         self.topConfigFrame.columnconfigure( 0, weight=1)
         self.filterListScrollbar= ttk.Scrollbar(self.topConfigFrame, orient=tk.VERTICAL)
         self.filterListScrollbar.grid(  column=1, row=0, sticky=tk.N+tk.S, pady=2)
-        self.filterListbox      = tk.Listbox(self.topConfigFrame, listvariable=self.mainWindow.filterListVar, activestyle='none', height=4, yscrollcommand=self.filterListScrollbar)
+        self.filterListbox      = tk.Listbox(self.topConfigFrame, listvariable=self.mainWindow.filterListVar, activestyle='none', height=4, yscrollcommand=self.filterListScrollbar, exportselection=False)
         try:
             self.filterListbox.config(selectbackground=self.mainWindow.highlightsColor, font='({},{})'.format(self.mainWindow.defaultFont, self.mainWindow.defaultFontSize))
         except:
@@ -71,7 +76,7 @@ class Configbar(ttk.Frame):
         self.rgboffsetFilter    = rgboffset.RGBoffsetFilter(self.filterConfigFrame, self)
         self.filterListObj.append(self.rgboffsetFilter)
         self.mainWindow.filterListStr.append(self.rgboffsetFilter.name)
-        self.rgboffsetFilter.display_widgets()
+        #self.rgboffsetFilter.display_widgets()
 
         # Big Blocks Offset
         self.bigblocksFilter    = bigblocks.BigBlocksFilter(self.filterConfigFrame, self)
@@ -117,44 +122,64 @@ class Configbar(ttk.Frame):
         self.bottomConfigFrame.rowconfigure(    0, weight=1, pad=5)
         self.bottomConfigFrame.rowconfigure(    1, weight=1, pad=5)
 
-        self.applyButton        = ttk.Button(       self.bottomConfigFrame, text='Apply Changes',              underline=0, command=self.apply_filter)
-        self.applyButton.grid(                                                column=0, row=0, sticky='news'   , padx=5, pady=2, rowspan=2)
-        self.randomButton       = ttk.Button(       self.bottomConfigFrame, text='Random Render',              underline=0, command=self.apply_filter_random)
-        self.randomButton.grid(                                         column=1, row=0, sticky=tk.W+tk.E, padx=5)
-        self.showRenderButton   = ttk.Button(       self.bottomConfigFrame, text='Preview full sized Image',   underline=8, command=self.preview_image)
-        self.showRenderButton.grid(                                               column=1, row=1, sticky=tk.W+tk.E, padx=5)
-        self.previewCheckbutton = ttk.Checkbutton(  self.bottomConfigFrame, text='Preview', variable=self.mainWindow.previewActiveVar, command=self.mainWindow.imagepreviewWidget.display_image)
-        self.previewCheckbutton.grid( column=0, row=2, sticky=tk.W,      padx=3)
-        self.resetPreviewButton = ttk.Button(       self.bottomConfigFrame, text='Reset Preview (Ctrl+Z)',                  command=self.mainWindow.imagepreviewWidget.reset_preview_values)
-        self.resetPreviewButton.grid(                                               column=1, row=2, sticky=tk.W+tk.E, padx=5)
+        self.applyButton        = ttk.Button(       self.bottomConfigFrame, text='Apply', underline=0, command=self.apply_filter)
+        self.applyButton.grid(          column=0, row=0, sticky='news'   , padx=5, pady=2, rowspan=2)
+        self.randomButton       = ttk.Button(       self.bottomConfigFrame, text='Random Render', underline=0, command=self.apply_filter_random)
+        self.randomButton.grid(         column=1, row=0, sticky=tk.W+tk.E, padx=5)
+        self.showRenderButton   = ttk.Button(       self.bottomConfigFrame, text='Generate GIF (experimental)',  underline=0, command=self.create_gif)
+        self.showRenderButton.grid(     column=1, row=1, sticky=tk.W+tk.E, padx=5)
+        self.previewCheckbutton = ttk.Checkbutton(  self.bottomConfigFrame, text='Preview', variable=self.mainWindow.previewActiveVar, command=self.mainWindow.update_preview)
+        self.previewCheckbutton.grid(   column=0, row=2, sticky=tk.W,      padx=3)
+        self.resetPreviewButton = ttk.Button(       self.bottomConfigFrame, text='Reset Preview (Ctrl+Z)', command=lambda: self.mainWindow.reset_preview(event=None))
+        self.resetPreviewButton.grid(   column=1, row=2, sticky=tk.W+tk.E, padx=5)
 
     def apply_filter_random(self, event=None):
-        if self.mainWindow.firstImageLoaded:
+        if self.mainWindow.imageIsLoaded:
             self.disable_configbar()
+            self.mainWindow.imageIsSaved = False
             image = copy(self.mainWindow.sourceImage)
             for filter in self.filterListObj:
                 filter.random_values()
-                filter.update_widgets_config()
+                #filter.update_widgets_config()
                 image = filter.applyFilter(image)
             self.mainWindow.tempImage = copy(image)
             del image
-            self.mainWindow.imagepreviewWidget.display_image(self.mainWindow.imagepreviewWidget.select_active_image())
+            self.mainWindow.update_preview()
             self.enable_configbar()
 
     def apply_filter(self, event=None):
-        if self.mainWindow.firstImageLoaded:
+        if self.mainWindow.imageIsLoaded:
             self.disable_configbar()
+            self.mainWindow.imageIsSaved = False
             image = copy(self.mainWindow.sourceImage)
             for filter in self.filterListObj:
                 image = filter.applyFilter(image)
             self.mainWindow.tempImage = copy(image)
             del image
-            self.mainWindow.imagepreviewWidget.display_image(self.mainWindow.imagepreviewWidget.select_active_image())
+            self.mainWindow.update_preview()
             self.enable_configbar()
+
+    def create_gif(self, event=None, framecount=5):
+            if self.mainWindow.imageIsLoaded:
+                self.disable_configbar()
+                # self.mainWindow.imageIsSaved = False
+                gif = []
+                for x in range(framecount):
+                    image = copy(self.mainWindow.sourceImage)
+                    for filter in self.filterListObj:
+                        filter.random_values()
+                        image = filter.applyFilter(image)
+                    image = np.array(image)
+                    gif.append(image)
+                    self.mainWindow.tempImage = copy(image)
+                    del image
+                imageio.mimsave('./tempGIF.gif', gif, duration=0.15)
+                # self.mainWindow.imagepreviewWidget.display_image(self.mainWindow.imagepreviewWidget.select_active_image())
+                self.enable_configbar()
 
     def update_filter_selection(self, event):
         #Get Name of the selected Filter as a String
-        selection = self.mainWindow.filterListStr[int(' '.join(map(str, self.filterListbox.curselection())))] #self.filterListbox.selection_get()
+        selection = self.filterListbox.get(self.filterListbox.curselection()[0])
 
         for child in self.filterConfigFrame.winfo_children():
             child.grid_forget()
@@ -174,13 +199,6 @@ class Configbar(ttk.Frame):
         # Update canvas window size
         self.filterConfigFrame.update_idletasks()
         self.filterConfigCanvas.configure(scrollregion=self.filterConfigCanvas.bbox('all'), height=self.filterConfigFrame.winfo_height())
-
-    def preview_image(self, event=None):
-        if self.mainWindow.firstImageLoaded:
-            try:
-                self.mainWindow.tempImage.show()
-            except:
-                showerror('Error', 'Image preview failed!\n(Your System must provide an image viewer)')
 
     def disable_configbar(self, state='disabled'):
         self.inProgress = True

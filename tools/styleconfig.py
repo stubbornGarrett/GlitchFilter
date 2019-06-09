@@ -16,6 +16,10 @@ class GlitchStyle(ttk.Style):
 
             'TFrame':           {'configure': { 'relief'        : tk.FLAT,
                                                 'padding'       : 10}},
+            
+            'TPanedwindow':     {'configure': { 'sashrelief '   : tk.SUNKEN,
+                                                'background '   : 'gray10',
+                                }},
 
             'TNotebook':        {'configure': { 'padding'       : 2}},
             
@@ -51,8 +55,8 @@ class GlitchStyle(ttk.Style):
                                 'map'       : { 'relief'        : [('pressed', tk.SUNKEN)],
                                                 'background'    : [('disabled', disableColor)],
                                                 'foreground'    : [('disabled', disableFont)],
-                                                'background'    : [('active', lightBackgroundColor)],
-                                                'foreground'    : [('active', darkHighlightsColor)],}},
+                                                #'background'    : [('active', lightBackgroundColor)],
+                                                'foreground'    : [('active', darkHighlightsColor)]}},
 
             'TEntry':           {'configure': { 'foreground'    : backgroundColor ,
                                                 'selectbackground': highlightsColor ,

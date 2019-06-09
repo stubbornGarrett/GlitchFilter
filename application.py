@@ -4,7 +4,7 @@ import os.path
 from configparser import ConfigParser
 from copy import copy
 from GUI.menubar import Menubar
-#from GUI.toolbar
+from GUI.infobar import Infobar
 from GUI.imagepreview import Imagepreview
 from GUI.configbar import Configbar
 from PIL import Image, ImageTk
@@ -20,7 +20,6 @@ class GlitchFilter(ttk.Frame):
             self.create_config()
         self.read_config('./settings.ini')
 
-        self.defaultFontSize = 11
         self.create_and_apply_theme()
 
         self.master.geometry('{}x{}+{}+{}'.format(self.config.get('MainWindow', 'minWidth'), self.config.get('MainWindow', 'minHeight'), self.config.get('MainWindow', 'xStartPos'), self.config.get('MainWindow', 'yStartPos')))
@@ -68,15 +67,15 @@ class GlitchFilter(ttk.Frame):
         self.config.read('./settings.ini')
 
     def create_and_apply_theme(self):
-        self.backgroundColor  = self.config.get('Style', 'backgroundColor')    #Background
-        self.lightBackgroundColor  = self.config.get('Style', 'lightBackgroundColor')    #Background
-        self.fontColor        = self.config.get('Style', 'fontColor')          #Font
-        self.highlightsColor  = self.config.get('Style', 'highlightsColor')    #Highlights (e.g. hovering a button)
-        self.darkHighlightsColor= self.config.get('Style', 'darkHighlightsColor')    #Highlights (e.g. hovering a button)
-        self.disableColor     = self.config.get('Style', 'disableColor')
-        self.disableFontColor = self.config.get('Style', 'disableFontColor')
-        self.defaultFont      = self.config.get('Style', 'defaultFont')
-        self.defaultFontSize  = self.config.getint('Style', 'defaultFontSize')
+        self.backgroundColor        = self.config.get('Style', 'backgroundColor')       #Background
+        self.lightBackgroundColor   = self.config.get('Style', 'lightBackgroundColor')  #Background
+        self.fontColor              = self.config.get('Style', 'fontColor')             #Font
+        self.highlightsColor        = self.config.get('Style', 'highlightsColor')       #Highlights (e.g. marking text)
+        self.darkHighlightsColor    = self.config.get('Style', 'darkHighlightsColor')   #Highlights (e.g. hovering a button)
+        self.disableColor           = self.config.get('Style', 'disableColor')
+        self.disableFontColor       = self.config.get('Style', 'disableFontColor')
+        self.defaultFont            = self.config.get('Style', 'defaultFont')
+        self.defaultFontSize        = self.config.getint('Style', 'defaultFontSize')
         
         font = '({},{})'.format(self.defaultFont, self.defaultFontSize)
 
@@ -89,24 +88,22 @@ class GlitchFilter(ttk.Frame):
         self.sourceImagePath        = ''
         self.sourceImageName        = ''
         self.sourceImageExtension   = '.png'
-        self.previewImage           = copy(self.sourceImage)
-       # self.tempImageThumbnail      = copy(self.sourceImage)
         self.tempImage              = copy(self.sourceImage)
 
         self.filetypes              = [ ('JPEG','*.jpg *.jpeg'),
                                         ('PNG','*.png'),
                                         ("all files","*.*")]
 
-        self.firstImageLoaded       = False
+        self.imageIsLoaded          = False
         self.imageIsSaved           = True
 
-        self.previewActiveVar        = tk.IntVar()
+        self.previewActiveVar       = tk.IntVar()
         self.previewActiveVar.set(1)
-        self.highResActiveVar        = tk.IntVar()
+        self.highResActiveVar       = tk.IntVar()
         self.highResActiveVar.set(0)
-        
+
         self.filterListStr  = []
-        self.filterListVar           = tk.StringVar()
+        self.filterListVar          = tk.StringVar()
 
     def init_gui(self):
         self.columnconfigure(0, weight=1)
@@ -118,20 +115,45 @@ class GlitchFilter(ttk.Frame):
         self.panedMainWindow.grid(column=0, row=0, sticky=tk.N+tk.E+tk.S+tk.W)
         self.panedMainWindow.rowconfigure(0, weight=1)
 
-        self.imagepreviewWidget = Imagepreview( self.panedMainWindow,   self)
-        self.configbarWidget    = Configbar(    self.panedMainWindow,   self)
+        self.leftMainFrame      = ttk.Frame(self.panedMainWindow)
+        self.leftMainFrame.columnconfigure(0, weight=1)
+        self.leftMainFrame.rowconfigure(0, weight=1)
+        self.leftMainFrame.rowconfigure(1, weight=0)
+        self.rightMainFrame     = ttk.Frame(self.panedMainWindow)
+        self.rightMainFrame.columnconfigure(0, weight=1)
+        self.rightMainFrame.rowconfigure(0, weight=1)
+        self.panedMainWindow.add(self.leftMainFrame,    weight=4)
+        self.panedMainWindow.add(self.rightMainFrame,   weight=1)
 
-        self.panedMainWindow.add(self.imagepreviewWidget,   weight=10)
-        self.panedMainWindow.add(self.configbarWidget,      weight=1)
+        self.imagepreviewWidget = Imagepreview( self.leftMainFrame, backgroundcolor=self.backgroundColor, quality=2)
+        self.imagepreviewWidget.grid(           column=0, row=0, sticky='news')
+        self.configbarWidget    = Configbar(    self.rightMainFrame,   self)
+        self.configbarWidget.grid(              column=0, row=0, sticky='news')
+
+        self.infobarWidget      = Infobar(      self.leftMainFrame)
+        self.infobarWidget.grid(                column=0, row=1, sticky='we')
 
     def set_binds(self):
+        def original_zoom(event):
+            self.imagepreviewWidget.original_zoom()
+            self.infobarWidget.update_previewInfo('x{}'.format(round(self.imagepreviewWidget.canvasScale,2)))
+        self.master.bind('1',           original_zoom)
         self.master.bind('<Control-a>', self.configbarWidget.apply_filter)
         self.master.bind('<Control-r>', self.configbarWidget.apply_filter_random)
-        self.master.bind('<Control-f>', self.configbarWidget.preview_image)
-        
-        self.master.bind('<Control-z>', self.imagepreviewWidget.reset_preview_values)
+        self.master.bind('<Control-g>', self.configbarWidget.create_gif)
+        self.master.bind('<Control-z>', self.reset_preview)
+        self.master.bind('<MouseWheel>',self.mouseWheel_events)
 
-        self.master.bind('<MouseWheel>', self.mouseWheel_events)
+        self.leftMainFrame.bind('<Configure>', self.imagepreviewWidget.adjust_canvas_size)
+
+        def canvas_zoom(event):
+            self.imagepreviewWidget.zoom(event)
+            self.infobarWidget.update_previewInfo('x{}'.format(round(self.imagepreviewWidget.canvasScale,2)))
+        self.imagepreviewWidget.previewCanvas.bind('<MouseWheel>', canvas_zoom)
+
+    def reset_preview(self, event):
+        self.imagepreviewWidget.reset_preview()
+        self.infobarWidget.update_previewInfo('x{}'.format(round(self.imagepreviewWidget.canvasScale,2)))
 
     def mouseWheel_events(self, event):
         mouseXpos = self.master.winfo_pointerx()-self.master.winfo_rootx()
@@ -150,6 +172,14 @@ class GlitchFilter(ttk.Frame):
             return askyesno(title, message)
         else:
             return True
+
+    def update_preview(self):
+        if self.previewActiveVar.get():
+            self.imagepreviewWidget.scaleChanged = True
+            self.imagepreviewWidget.update_image(self.tempImage)
+        else:
+            self.imagepreviewWidget.scaleChanged = True
+            self.imagepreviewWidget.update_image(self.sourceImage)
 
     def quit_application(self):
         if self.continue_without_save():
