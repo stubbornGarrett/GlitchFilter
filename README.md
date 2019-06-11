@@ -6,12 +6,14 @@ Image by Gathen9 [aka Fabio Marinacci](https://deviantart.com/gathen9)
 
 # How it works
 1. Load an image *"File -> Open Image"* or *"Ctrl + O"*
-2. Activate filters you want to use in *"Active Filter List"*
+2. Activate filters you want to use in *"Active Filter"*
 3. Select filters from the list to show their paramters
 4. Adjust parameters
-5. Hit *"Apply Changes"*
+5. Hit *"Apply"*
 
 To get a first impression skip 2,3 and 4. The default parameters should look fine on most pictures
+
+Saveing images over the file menu or by pressing *"Ctrl + S"* won't override the original image. A seperate file with the name extension "-Glitch" will be created in the same directory.
 
 # New in v2.0
 - Resizable Interface
