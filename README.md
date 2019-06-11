@@ -24,6 +24,4 @@ Image by Gathen9 [aka Fabio Marinacci](https://deviantart.com/gathen9)
 I love Sci-Fi and Cyberpunk and the look of destroyed, glitchy images from this genres. For this I wanted an application which could create such images with less effort, than editing them by myself.
 
 GlitchFilter is far from perfect and I got many ideas to improve it. But for now I'm publishing this more or less stable version.
-It's the first "real" application I made and I learned a lot while doing so. Maybe the next version will be a complete rework.
-
-The only thing I'm really sorry for is the GUI. It's by no means intuitive and the parameter names are sometimes not really meaningful. A documentation is on the to do list.
+It's the first "real" application I made and I learned a lot while doing so.
